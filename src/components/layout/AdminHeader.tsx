@@ -1,17 +1,3 @@
-.gitignore
-node_modules
-dist
-build
-out
-.next
-coverage
-*.log
-.env*
-.DS_Store
-tmp
-*.tmp
-*.log
-
 import React from 'react';
 import { Bell, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
