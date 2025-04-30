@@ -1,0 +1,66 @@
+
+Re-optimizing dependencies because lockfile has changed
+Port 8080 is in use, trying another one...
+
+  VITE v5.4.19  ready in 979 ms
+
+  ➜  Local:   http://localhost:8081/
+  ➜  Network: http://192.168.127.47:8081/
+  ➜  press h + enter to show help
+Error:   Failed to scan for dependencies from entries:
+  /home/olal/NetBeansProjects/tea-time-roster-bloom/index.html
+
+  ✘ [ERROR] Unexpected closing "BrowserRouter" tag does not match opening "AuthProvider" tag
+
+    src/App.tsx:57:6:
+      57 │     </BrowserRouter>
+         │       ~~~~~~~~~~~~~
+         ╵       AuthProvider
+
+  The opening "AuthProvider" tag is here:
+
+    src/App.tsx:30:7:
+      30 │       <AuthProvider>
+         ╵        ~~~~~~~~~~~~
+
+
+✘ [ERROR] Unexpected closing "QueryClientProvider" tag does not match opening "BrowserRouter" tag
+
+    src/App.tsx:58:4:
+      58 │   </QueryClientProvider>
+         │     ~~~~~~~~~~~~~~~~~~~
+         ╵     BrowserRouter
+
+  The opening "BrowserRouter" tag is here:
+
+    src/App.tsx:29:5:
+      29 │     <BrowserRouter>
+         ╵      ~~~~~~~~~~~~~
+
+
+✘ [ERROR] Unexpected end of file before a closing "QueryClientProvider" tag
+
+    src/App.tsx:61:19:
+      61 │ export default App;
+         │                    ^
+         ╵                    </QueryClientProvider>
+
+  The opening "QueryClientProvider" tag is here:
+
+    src/App.tsx:28:3:
+      28 │   <QueryClientProvider client={queryClient}>
+         ╵    ~~~~~~~~~~~~~~~~~~~
+
+
+    at failureErrorWithLog (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+    at /home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:945:25
+    at runOnEndCallbacks (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:1315:45)
+    at buildResponseToResult (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:943:7)
+    at /home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:955:9
+    at new Promise (<anonymous>)
+    at requestCallbacks.on-end (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:954:54)
+    at handleRequest (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:647:17)
+    at handleIncomingPacket (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:672:7)
+    at Socket.readFromStdout (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+
+
