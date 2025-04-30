@@ -5,11 +5,20 @@ import { useToast } from '@/components/ui/use-toast';
 import { Clock } from 'lucide-react';
 import { clockIn, clockOut, getActiveClockRecord } from '@/services/clockService';
 
+import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { clockIn, clockOut, getActiveClockRecord } from '@/services/clockService';
+
 const ClockInOutCard: React.FC = () => {
   const [isClockingIn, setIsClockingIn] = useState(false);
   const [activeRecord, setActiveRecord] = useState<any>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -22,7 +31,8 @@ const ClockInOutCard: React.FC = () => {
 
   const checkActiveRecord = async () => {
     try {
-      const record = await getActiveClockRecord('current_user_id'); // Replace with actual user ID
+      if (!user?.id) return;
+      const record = await getActiveClockRecord(user.id);
       setActiveRecord(record);
     } catch (error) {
       console.error('Error checking clock status:', error);
@@ -36,7 +46,8 @@ const ClockInOutCard: React.FC = () => {
         await clockOut(activeRecord.id);
         setActiveRecord(null);
       } else {
-        const record = await clockIn('current_user_id'); // Replace with actual user ID
+        if (!user?.id) return;
+        const record = await clockIn(user.id);
         setActiveRecord(record);
       }
 
