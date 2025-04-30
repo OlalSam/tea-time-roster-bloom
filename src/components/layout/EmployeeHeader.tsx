@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { signOut } from 'firebase/auth'; // Or your auth library
+import { signOut } from '@/services/authService'; // Or your auth library
 
 
 interface NavItemProps {

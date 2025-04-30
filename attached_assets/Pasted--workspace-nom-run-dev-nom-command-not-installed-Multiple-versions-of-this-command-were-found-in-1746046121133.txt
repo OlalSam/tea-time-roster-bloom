@@ -1,0 +1,64 @@
+~/workspace$ nom run dev
+nom: command not installed. Multiple versions of this command were found in Nix.
+Select one to run (or press Ctrl-C to cancel):
+~/workspace$ npm run dev
+
+> vite_react_shadcn_ts@0.0.0 dev
+> vite
+
+Port 8080 is in use, trying another one...
+
+  VITE v5.4.19  ready in 226 ms
+
+  ➜  Local:   http://localhost:8081/
+  ➜  Network: http://172.31.128.16:8081/
+  ➜  press h + enter to show help
+Error: The following dependencies are imported but could not be resolved:
+
+  react-feather (imported by /home/runner/workspace/src/components/layout/EmployeeLayout.tsx)
+  your-routing-library (imported by /home/runner/workspace/src/components/layout/AdminHeader.tsx)
+  firebase/auth (imported by /home/runner/workspace/src/components/layout/EmployeeHeader.tsx)
+
+Are they installed?
+    at file:///home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50669:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50174:26
+^C
+~/workspace$ npm update
+
+up to date, audited 432 packages in 27s
+
+87 packages are looking for funding
+  run `npm fund` for details
+
+5 moderate severity vulnerabilities
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+~/workspace$ npm run dev
+
+> vite_react_shadcn_ts@0.0.0 dev
+> vite
+
+Port 8080 is in use, trying another one...
+
+  VITE v5.4.19  ready in 234 ms
+
+  ➜  Local:   http://localhost:8081/
+  ➜  Network: http://172.31.128.16:8081/
+  ➜  press h + enter to show help
+Error: The following dependencies are imported but could not be resolved:
+
+  react-feather (imported by /home/runner/workspace/src/components/layout/EmployeeLayout.tsx)
+  your-routing-library (imported by /home/runner/workspace/src/components/layout/AdminHeader.tsx)
+  firebase/auth (imported by /home/runner/workspace/src/components/layout/EmployeeHeader.tsx)
+
+Are they installed?
+    at file:///home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50669:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50174:26

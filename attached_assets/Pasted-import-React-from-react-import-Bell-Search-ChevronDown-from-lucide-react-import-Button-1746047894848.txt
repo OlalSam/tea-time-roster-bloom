@@ -9,12 +9,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signOut } from '@/services/authService'; // Import signOut function
-import { useNavigate } from 'react-router-dom'; // Define navigation
+import { signOut, navigate } from 'react-router-dom'; // Replace with your actual import
+
 
 const AdminHeader: React.FC = () => {
-  const navigate = useNavigate(); // Initialize navigate
-
   return (
     <header className="bg-white border-b border-border py-3 px-6 flex items-center justify-between">
       <div className="relative w-80">
@@ -51,8 +49,8 @@ const AdminHeader: React.FC = () => {
             <DropdownMenuItem onClick={() => navigate('/admin/settings')}>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
-              await signOut(); // Call signOut function from authService
-              navigate('/login'); // Navigate to login page after sign out
+              await signOut();
+              navigate('/login');
             }} className="text-destructive">
               Log out
             </DropdownMenuItem>
