@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,28 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+                // Tea Factory custom colors
+                'forest': {
+                    DEFAULT: '#1F3D2E', // Deep forest green
+                    light: '#2A5540',
+                    dark: '#15291F',
+                },
+                'mint': {
+                    DEFAULT: '#A8D5BA', // Soft mint green
+                    light: '#C3E4D0',
+                    dark: '#8CC6A5',
+                },
+                'cream': {
+                    DEFAULT: '#F5F4EF', // Cream white
+                    light: '#FFFFFF',
+                    dark: '#EAE8DF',
+                },
+                'charcoal': {
+                    DEFAULT: '#2E2E2E', // Charcoal
+                    light: '#4A4A4A',
+                    dark: '#222222',
+                },
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +106,24 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)',
+					},
+					'50%': {
+						transform: 'translateY(-5px)',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
