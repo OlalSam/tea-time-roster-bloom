@@ -24,7 +24,8 @@ import { fetchShiftTypes } from '@/services/shiftService';
 import { Schedule, ScheduleShift, ShiftType, Department } from '@/types/database';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Calendar, CheckCircle, Clipboard, Loader2, User, XCircle } from 'lucide-react';
-import { Switch, Label } from '@/components/ui/switch'; // Import Switch and Label components
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 
 const ScheduleDetail: React.FC = () => {
