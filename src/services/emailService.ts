@@ -41,22 +41,44 @@ export async function sendScheduleEmail(recipientEmail: string, weeklySchedule: 
 }
 
 function generateScheduleHtml(schedule: any) {
-  // Generate HTML template for schedule
+  const title = schedule.isAdminSummary 
+    ? 'Weekly Schedule Summary (Admin View)'
+    : 'Your Schedule for the Week';
+
+  const style = `
+    <style>
+      table { border-collapse: collapse; width: 100%; }
+      th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+      th { background-color: #f4f4f4; }
+      .header { margin-bottom: 20px; }
+      .footer { margin-top: 20px; font-size: 12px; color: #666; }
+    </style>
+  `;
+
   return `
-    <h2>Your Schedule for the Week</h2>
+    ${style}
+    <div class="header">
+      <h2>${title}</h2>
+      <p>Generated on ${new Date().toLocaleDateString()}</p>
+    </div>
     <table>
       <tr>
         <th>Date</th>
         <th>Shift</th>
         <th>Time</th>
+        ${schedule.isAdminSummary ? '<th>Employee</th>' : ''}
       </tr>
       ${schedule.shifts.map((shift: any) => `
         <tr>
           <td>${new Date(shift.shift_date).toLocaleDateString()}</td>
           <td>${shift.shift_type.name}</td>
           <td>${shift.shift_type.start_time} - ${shift.shift_type.end_time}</td>
+          ${schedule.isAdminSummary ? `<td>${shift.employee?.first_name} ${shift.employee?.last_name}</td>` : ''}
         </tr>
       `).join('')}
     </table>
+    <div class="footer">
+      <p>This is an automated message from your scheduling system.</p>
+    </div>
   `;
 }

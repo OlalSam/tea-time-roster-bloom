@@ -234,4 +234,74 @@ export async function updateScheduleStatus(id: string, status: 'pending' | 'appr
     console.error('Error updating schedule status:', error);
     throw error;
   }
+
+  // Send email notifications if schedule is approved
+  if (status === 'approved') {
+    await sendScheduleNotifications(id);
+  }
+}
+
+async function sendScheduleNotifications(scheduleId: string) {
+  try {
+    // Fetch schedule details with shifts and employees
+    const { data: shifts, error: shiftsError } = await supabase
+      .from('schedule_shifts')
+      .select(`
+        *,
+        employees (
+          id,
+          email,
+          first_name,
+          last_name
+        ),
+        shift_types (
+          name,
+          start_time,
+          end_time
+        )
+      `)
+      .eq('schedule_id', scheduleId);
+
+    if (shiftsError) throw shiftsError;
+
+    // Group shifts by employee
+    const employeeShifts = shifts?.reduce((acc: any, shift) => {
+      const employeeId = shift.employee_id;
+      if (!acc[employeeId]) {
+        acc[employeeId] = {
+          employee: shift.employees,
+          shifts: []
+        };
+      }
+      acc[employeeId].shifts.push({
+        shift_date: shift.shift_date,
+        shift_type: shift.shift_types
+      });
+      return acc;
+    }, {});
+
+    // Send email to each employee
+    for (const employeeId in employeeShifts) {
+      const { employee, shifts } = employeeShifts[employeeId];
+      await sendScheduleEmail(employee.email, { shifts });
+    }
+
+    // Send summary to admin
+    const { data: adminEmails } = await supabase
+      .from('employees')
+      .select('email')
+      .eq('role', 'admin');
+
+    if (adminEmails) {
+      for (const admin of adminEmails) {
+        await sendScheduleEmail(admin.email, { 
+          shifts: Object.values(employeeShifts).flatMap((e: any) => e.shifts),
+          isAdminSummary: true 
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error sending schedule notifications:', error);
+    throw error;
+  }
 }

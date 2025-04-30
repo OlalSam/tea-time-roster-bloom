@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -25,23 +24,25 @@ import { fetchShiftTypes } from '@/services/shiftService';
 import { Schedule, ScheduleShift, ShiftType, Department } from '@/types/database';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Calendar, CheckCircle, Clipboard, Loader2, User, XCircle } from 'lucide-react';
+import { Switch, Label } from '@/components/ui/switch'; // Import Switch and Label components
+
 
 const ScheduleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [shifts, setShifts] = useState<ScheduleShift[]>([]);
   const [shiftTypes, setShiftTypes] = useState<ShiftType[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<Record<string, any>>({});
-  
+
   useEffect(() => {
     const loadData = async () => {
       if (!id) return;
-      
+
       try {
         const [scheduleData, shiftsData, shiftTypesData, departmentsData] = await Promise.all([
           fetchScheduleById(id),
@@ -49,12 +50,12 @@ const ScheduleDetail: React.FC = () => {
           fetchShiftTypes(),
           fetchDepartments()
         ]);
-        
+
         setSchedule(scheduleData);
         setShifts(shiftsData);
         setShiftTypes(shiftTypesData);
         setDepartments(departmentsData);
-        
+
         // Mock employee data for now - would normally come from an API
         const mockEmployees: Record<string, any> = {};
         shiftsData.forEach(shift => {
@@ -67,7 +68,7 @@ const ScheduleDetail: React.FC = () => {
             };
           }
         });
-        
+
         setEmployees(mockEmployees);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -80,16 +81,16 @@ const ScheduleDetail: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     loadData();
   }, [id, toast]);
-  
+
   const handleStatusChange = async (status: 'pending' | 'approved' | 'rejected') => {
     if (!id) return;
-    
+
     try {
       await updateScheduleStatus(id, status);
-      
+
       // Update local state
       if (schedule) {
         setSchedule({
@@ -97,7 +98,7 @@ const ScheduleDetail: React.FC = () => {
           status
         });
       }
-      
+
       toast({
         title: 'Status updated',
         description: `Schedule status changed to ${status}.`,
@@ -111,16 +112,16 @@ const ScheduleDetail: React.FC = () => {
       });
     }
   };
-  
+
   const getShiftTypeById = (id: string) => {
     return shiftTypes.find(type => type.id === id);
   };
-  
+
   const getDepartmentById = (id: string | null) => {
     if (!id) return 'All Departments';
     return departments.find(dept => dept.id === id)?.name || 'Unknown';
   };
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -146,7 +147,7 @@ const ScheduleDetail: React.FC = () => {
         );
     }
   };
-  
+
   if (loading) {
     return (
       <AdminLayout>
@@ -157,7 +158,7 @@ const ScheduleDetail: React.FC = () => {
       </AdminLayout>
     );
   }
-  
+
   if (!schedule) {
     return (
       <AdminLayout>
@@ -171,7 +172,7 @@ const ScheduleDetail: React.FC = () => {
       </AdminLayout>
     );
   }
-  
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -183,7 +184,7 @@ const ScheduleDetail: React.FC = () => {
           <h1 className="text-2xl font-bold">{schedule.name}</h1>
           <div className="ml-4">{getStatusBadge(schedule.status)}</div>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Schedule Details</CardTitle>
@@ -203,22 +204,42 @@ const ScheduleDetail: React.FC = () => {
                 <p>{format(parseISO(schedule.created_at), 'MMM d, yyyy')}</p>
               </div>
             </div>
-            
+
             {schedule.status === 'pending' && (
-              <div className="mt-6 flex gap-2 justify-end">
-                <Button variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100" onClick={() => handleStatusChange('rejected')}>
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Reject Schedule
-                </Button>
-                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleStatusChange('approved')}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Approve Schedule
-                </Button>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="notifications"
+                    onCheckedChange={(checked) => {
+                      // Toggle notifications setting in localStorage
+                      localStorage.setItem('sendScheduleNotifications', checked.toString());
+                    }}
+                    defaultChecked={localStorage.getItem('sendScheduleNotifications') !== 'false'}
+                  />
+                  <Label htmlFor="notifications">Send email notifications on approval</Label>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleStatusChange('approved')} 
+                    variant="outline" 
+                    className="bg-green-50 text-green-700 hover:bg-green-100"
+                  >
+                    Approve Schedule
+                  </Button>
+                  <Button 
+                    onClick={() => handleStatusChange('rejected')} 
+                    variant="outline" 
+                    className="bg-red-50 text-red-700 hover:bg-red-100"
+                  >
+                    Reject Schedule
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle>Assigned Shifts</CardTitle>
