@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,28 +33,29 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/generate" element={<AdminRoute><ScheduleGenerator /></AdminRoute>} />
-          <Route path="/admin/schedules" element={<AdminRoute><Schedules /></AdminRoute>} />
-          <Route path="/admin/schedules/:id" element={<AdminRoute><ScheduleDetail /></AdminRoute>} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/generate" element={<ScheduleGenerator />} />
+            <Route path="/admin/schedules" element={<Schedules />} />
+            <Route path="/admin/schedules/:id" element={<ScheduleDetail />} />
 
-          {/* Employee Routes */}
-          <Route path="/employee" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
-          <Route path="/employee/clock" element={<ProtectedRoute><ClockInOut /></ProtectedRoute>} />
-          <Route path="/employee/leave" element={<ProtectedRoute><LeaveManagement /></ProtectedRoute>} />
+            {/* Employee Routes */}
+            <Route path="/employee" element={<EmployeeDashboard />} />
+            <Route path="/employee/clock" element={<ClockInOut />} />
+            <Route path="/employee/leave" element={<LeaveManagement />} />
 
-          {/* Redirects for convenience */}
-          <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
-          <Route path="/employee/dashboard" element={<Navigate to="/employee" replace />} />
+            {/* Redirects for convenience */}
+            <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
+            <Route path="/employee/dashboard" element={<Navigate to="/employee" replace />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
