@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -33,6 +32,10 @@ import { CalendarIcon, Loader2, Settings, Wand2 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/hooks/use-toast';
+import { fetchDepartments } from '@/services/departmentService';
+import { generateSchedule } from '@/services/scheduleService';
+import { Department } from '@/types/database';
 
 const scheduleGenerationSchema = z.object({
   department: z.string({
@@ -58,6 +61,8 @@ const scheduleGenerationSchema = z.object({
 
 const ScheduleGenerationForm: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof scheduleGenerationSchema>>({
     resolver: zodResolver(scheduleGenerationSchema),
@@ -76,16 +81,43 @@ const ScheduleGenerationForm: React.FC = () => {
     },
   });
   
-  const handleGenerate = (data: z.infer<typeof scheduleGenerationSchema>) => {
-    setIsGenerating(true);
-    console.log(data);
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const departments = await fetchDepartments();
+        setDepartments(departments);
+      } catch (error) {
+        console.error('Failed to load departments:', error);
+        toast({
+          title: 'Error loading departments',
+          description: 'Please try again later.',
+          variant: 'destructive',
+        });
+      }
+    };
     
-    // Simulate API call
-    setTimeout(() => {
+    loadDepartments();
+  }, [toast]);
+  
+  const handleGenerate = async (data: z.infer<typeof scheduleGenerationSchema>) => {
+    setIsGenerating(true);
+    try {
+      await generateSchedule(data);
+      toast({
+        title: 'Schedule generated successfully',
+        description: 'The schedule has been created and is pending approval.',
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Error generating schedule:', error);
+      toast({
+        title: 'Failed to generate schedule',
+        description: 'An error occurred while generating the schedule.',
+        variant: 'destructive',
+      });
+    } finally {
       setIsGenerating(false);
-      // Handle success
-      console.log('Schedule generated successfully');
-    }, 2000);
+    }
   };
 
   return (
@@ -124,10 +156,11 @@ const ScheduleGenerationForm: React.FC = () => {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="all">All Departments</SelectItem>
-                          <SelectItem value="processing">Processing</SelectItem>
-                          <SelectItem value="packaging">Packaging</SelectItem>
-                          <SelectItem value="warehouse">Warehouse</SelectItem>
-                          <SelectItem value="quality">Quality Control</SelectItem>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -345,10 +378,11 @@ const ScheduleGenerationForm: React.FC = () => {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="all">All Departments</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="packaging">Packaging</SelectItem>
-                            <SelectItem value="warehouse">Warehouse</SelectItem>
-                            <SelectItem value="quality">Quality Control</SelectItem>
+                            {departments.map((dept) => (
+                              <SelectItem key={dept.id} value={dept.id}>
+                                {dept.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />

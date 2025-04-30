@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 // Admin Routes
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ScheduleGenerator from "./pages/admin/ScheduleGenerator";
+import Schedules from "./pages/admin/Schedules";
+import ScheduleDetail from "./pages/admin/ScheduleDetail";
 
 // Employee Routes
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
@@ -30,6 +32,8 @@ const App = () => (
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/generate" element={<ScheduleGenerator />} />
+          <Route path="/admin/schedules" element={<Schedules />} />
+          <Route path="/admin/schedules/:id" element={<ScheduleDetail />} />
           
           {/* Employee Routes */}
           <Route path="/employee" element={<EmployeeDashboard />} />

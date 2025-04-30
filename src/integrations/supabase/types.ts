@@ -9,7 +9,188 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      departments: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          first_name: string
+          id: string
+          last_name: string
+          position: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          position: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          position?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_shifts: {
+        Row: {
+          created_at: string | null
+          employee_id: string | null
+          id: string
+          schedule_id: string | null
+          shift_date: string
+          shift_type_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          schedule_id?: string | null
+          shift_date: string
+          shift_type_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          schedule_id?: string | null
+          shift_date?: string
+          shift_type_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_shifts_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_shifts_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_shifts_shift_type_id_fkey"
+            columns: ["shift_type_id"]
+            isOneToOne: false
+            referencedRelation: "shift_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_types: {
+        Row: {
+          color: string
+          created_at: string | null
+          end_time: string
+          id: string
+          name: string
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          color: string
+          created_at?: string | null
+          end_time: string
+          id?: string
+          name: string
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          name?: string
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
