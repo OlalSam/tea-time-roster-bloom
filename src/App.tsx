@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,10 @@ import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import ClockInOut from "./pages/employee/ClockInOut";
 import LeaveManagement from "./pages/employee/LeaveManagement";
 
+// Auth Routes
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -27,23 +30,25 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
-          <Route path="/" element={<Index />} />
-          
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/generate" element={<ScheduleGenerator />} />
           <Route path="/admin/schedules" element={<Schedules />} />
           <Route path="/admin/schedules/:id" element={<ScheduleDetail />} />
-          
+
           {/* Employee Routes */}
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/employee/clock" element={<ClockInOut />} />
           <Route path="/employee/leave" element={<LeaveManagement />} />
-          
+
           {/* Redirects for convenience */}
           <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
           <Route path="/employee/dashboard" element={<Navigate to="/employee" replace />} />
-          
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
