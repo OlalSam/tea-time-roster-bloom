@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   Calendar, 
@@ -20,6 +19,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { signOut } from 'firebase/auth'; // Or your auth library
+
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -72,7 +73,8 @@ const MobileNavItem: React.FC<NavItemProps> = ({ icon, label, to, active }) => {
 const EmployeeHeader: React.FC = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const navigate = useNavigate();
+
   return (
     <header className="bg-white border-b border-border">
       {/* Desktop Header */}
@@ -87,7 +89,7 @@ const EmployeeHeader: React.FC = () => {
           </div>
           <h1 className="font-bold text-lg">Tea Factory</h1>
         </div>
-        
+
         <nav className="flex items-center space-x-2">
           <NavItem
             to="/employee"
@@ -114,13 +116,13 @@ const EmployeeHeader: React.FC = () => {
             active={location.pathname === "/employee/profile"}
           />
         </nav>
-        
+
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive"></span>
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
@@ -135,15 +137,20 @@ const EmployeeHeader: React.FC = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/employee/profile')}>Profile</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/employee/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={async () => {
+                await signOut();
+                navigate('/login');
+              }} className="text-destructive">
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      
+
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between py-3 px-4">
         <div className="flex items-center gap-2">
@@ -156,13 +163,13 @@ const EmployeeHeader: React.FC = () => {
           </div>
           <h1 className="font-bold text-lg">Tea Factory</h1>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive"></span>
           </Button>
-          
+
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -181,7 +188,7 @@ const EmployeeHeader: React.FC = () => {
                     <p className="text-sm text-muted-foreground">Tea Processor</p>
                   </div>
                 </div>
-                
+
                 <nav className="space-y-1 mt-4">
                   <MobileNavItem
                     to="/employee"
@@ -208,9 +215,12 @@ const EmployeeHeader: React.FC = () => {
                     active={location.pathname === "/employee/profile"}
                   />
                 </nav>
-                
+
                 <div className="mt-auto pt-4 border-t border-border">
-                  <Button className="w-full" variant="destructive">
+                  <Button className="w-full" variant="destructive" onClick={async () => {
+                    await signOut();
+                    navigate('/login');
+                  }}>
                     Log out
                   </Button>
                 </div>
@@ -219,7 +229,7 @@ const EmployeeHeader: React.FC = () => {
           </Sheet>
         </div>
       </div>
-      
+
       {/* Bottom Navigation for Mobile */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex justify-around p-1">
         <NavItem

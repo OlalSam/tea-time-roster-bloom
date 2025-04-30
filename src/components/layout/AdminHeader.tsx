@@ -1,3 +1,16 @@
+.gitignore
+node_modules
+dist
+build
+out
+.next
+coverage
+*.log
+.env*
+.DS_Store
+tmp
+*.tmp
+*.log
 
 import React from 'react';
 import { Bell, Search, ChevronDown } from 'lucide-react';
@@ -10,6 +23,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { signOut, navigate } from 'your-routing-library'; // Replace with your actual import
+
 
 const AdminHeader: React.FC = () => {
   return (
@@ -22,13 +37,13 @@ const AdminHeader: React.FC = () => {
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
         />
       </div>
-      
+
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive"></span>
         </Button>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
@@ -44,10 +59,15 @@ const AdminHeader: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin/profile')}>Profile</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin/settings')}>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => {
+              await signOut();
+              navigate('/login');
+            }} className="text-destructive">
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
