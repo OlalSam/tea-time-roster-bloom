@@ -26,24 +26,25 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/generate" element={<ScheduleGenerator />} />
-          <Route path="/admin/schedules" element={<Schedules />} />
-          <Route path="/admin/schedules/:id" element={<ScheduleDetail />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/generate" element={<AdminRoute><ScheduleGenerator /></AdminRoute>} />
+          <Route path="/admin/schedules" element={<AdminRoute><Schedules /></AdminRoute>} />
+          <Route path="/admin/schedules/:id" element={<AdminRoute><ScheduleDetail /></AdminRoute>} />
 
           {/* Employee Routes */}
-          <Route path="/employee" element={<EmployeeDashboard />} />
-          <Route path="/employee/clock" element={<ClockInOut />} />
-          <Route path="/employee/leave" element={<LeaveManagement />} />
+          <Route path="/employee" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
+          <Route path="/employee/clock" element={<ProtectedRoute><ClockInOut /></ProtectedRoute>} />
+          <Route path="/employee/leave" element={<ProtectedRoute><LeaveManagement /></ProtectedRoute>} />
 
           {/* Redirects for convenience */}
           <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
