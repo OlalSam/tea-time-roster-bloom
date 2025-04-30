@@ -15,6 +15,8 @@ export async function signUp(email: string, password: string, firstName: string,
       id: authData.user.id,
       first_name: firstName,
       last_name: lastName,
+      email: email,
+      role: 'employee', // Default role
       position: 'Employee', // Default position
     });
 
