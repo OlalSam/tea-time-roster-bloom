@@ -1,20 +1,43 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
+import { signUp } from '@/services/authService';
+import { useToast } from '@/components/ui/use-toast';
 
 const Register = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement registration logic with Supabase
+    setIsLoading(true);
+
+    try {
+      await signUp(email, password, firstName, lastName);
+      toast({
+        title: "Success",
+        description: "Account created successfully. Please sign in.",
+      });
+      navigate('/login');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,8 +92,8 @@ const Register = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-forest hover:bg-forest-dark">
-              Create Account
+            <Button type="submit" className="w-full bg-forest hover:bg-forest-dark" disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

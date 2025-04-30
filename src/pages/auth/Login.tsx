@@ -1,18 +1,37 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
+import { signIn } from '@/services/authService';
+import { useToast } from '@/components/ui/use-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic with Supabase
+    setIsLoading(true);
+    
+    try {
+      await signIn(email, password);
+      navigate('/employee/dashboard');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,8 +66,8 @@ const Login = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-forest hover:bg-forest-dark">
-              Sign In
+            <Button type="submit" className="w-full bg-forest hover:bg-forest-dark" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
