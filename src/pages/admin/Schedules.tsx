@@ -1,74 +1,112 @@
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { fetchSchedules, updateScheduleStatus } from '@/services/scheduleService';
 import { Schedule } from '@/types/database';
+import { Calendar, CheckCircle, Clock, Loader2, Search, XCircle } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { CalendarCheck, Eye, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 const SchedulesPage: React.FC = () => {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   
   useEffect(() => {
     const loadSchedules = async () => {
-      setIsLoading(true);
       try {
         const data = await fetchSchedules();
         setSchedules(data);
       } catch (error) {
-        console.error('Failed to load schedules:', error);
         toast({
           title: 'Error loading schedules',
-          description: 'Please try again later.',
+          description: 'Could not fetch schedule data. Please try again later.',
           variant: 'destructive',
         });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
     
     loadSchedules();
   }, [toast]);
   
-  const handleApprove = async (id: string) => {
-    setIsUpdating(id);
+  const handleViewSchedule = (scheduleId: string) => {
+    navigate(`/admin/schedules/${scheduleId}`);
+  };
+  
+  const handleStatusChange = async (scheduleId: string, status: 'pending' | 'approved' | 'rejected') => {
     try {
-      await updateScheduleStatus(id, 'approved');
-      setSchedules(prevSchedules => 
-        prevSchedules.map(schedule => 
-          schedule.id === id 
-            ? { ...schedule, status: 'approved' } 
-            : schedule
+      await updateScheduleStatus(scheduleId, status);
+      
+      // Update local state
+      setSchedules(prevSchedules =>
+        prevSchedules.map(schedule =>
+          schedule.id === scheduleId ? { ...schedule, status } : schedule
         )
       );
+      
       toast({
-        title: 'Schedule approved',
-        description: 'The schedule has been approved successfully.',
+        title: 'Status updated',
+        description: `Schedule status changed to ${status}.`,
+        variant: status === 'approved' ? 'default' : (status === 'rejected' ? 'destructive' : 'default'),
       });
     } catch (error) {
-      console.error('Failed to approve schedule:', error);
       toast({
-        title: 'Error approving schedule',
-        description: 'Please try again later.',
+        title: 'Error updating status',
+        description: 'Failed to update schedule status. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsUpdating(null);
+    }
+  };
+  
+  const filteredSchedules = statusFilter === 'all'
+    ? schedules
+    : schedules.filter(schedule => schedule.status === statusFilter);
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return (
+          <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+            <CheckCircle className="mr-1 h-3 w-3" />
+            Approved
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+            <XCircle className="mr-1 h-3 w-3" />
+            Rejected
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+            <Clock className="mr-1 h-3 w-3" />
+            Pending
+          </span>
+        );
     }
   };
   
@@ -76,88 +114,99 @@ const SchedulesPage: React.FC = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Schedules</h1>
-          <Link to="/admin/generate">
-            <Button className="bg-forest hover:bg-forest-dark text-cream">
-              <CalendarCheck className="mr-2 h-4 w-4" /> 
-              Generate New Schedule
-            </Button>
-          </Link>
+          <h1 className="text-2xl font-bold">Schedule Management</h1>
+          <Button onClick={() => navigate('/admin/generate')} className="bg-forest hover:bg-forest-dark text-cream">
+            Create New Schedule
+          </Button>
         </div>
         
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : schedules.length === 0 ? (
-          <div className="text-center p-8 border rounded-lg bg-muted/10">
-            <h3 className="text-lg font-medium">No schedules found</h3>
-            <p className="text-muted-foreground mt-2">
-              Generate a new schedule to get started.
-            </p>
-          </div>
-        ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {schedules.map((schedule) => (
-                  <TableRow key={schedule.id}>
-                    <TableCell className="font-medium">{schedule.name}</TableCell>
-                    <TableCell>
-                      {format(new Date(schedule.start_date), 'MMM d')} - {format(new Date(schedule.end_date), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          schedule.status === 'approved' ? 'success' : 
-                          schedule.status === 'rejected' ? 'destructive' : 
-                          'outline'
-                        }
-                      >
-                        {schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{format(new Date(schedule.created_at), 'MMM d, yyyy')}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          asChild
-                        >
-                          <Link to={`/admin/schedules/${schedule.id}`}>
-                            <Eye className="mr-1 h-4 w-4" /> View
-                          </Link>
-                        </Button>
-                        {schedule.status === 'pending' && (
-                          <Button 
-                            size="sm" 
-                            className="bg-forest hover:bg-forest-dark text-cream"
-                            onClick={() => handleApprove(schedule.id)}
-                            disabled={isUpdating === schedule.id}
-                          >
-                            {isUpdating === schedule.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : 'Approve'}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>All Schedules</CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search schedules..."
+                  className="w-full pl-9 pr-4 py-2 rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2">Loading schedules...</span>
+              </div>
+            ) : filteredSchedules.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-lg font-medium">No schedules found</p>
+                <p className="text-sm">
+                  {statusFilter !== 'all' 
+                    ? `There are no schedules with ${statusFilter} status`
+                    : 'Create a new schedule to get started'}
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Schedule Name</TableHead>
+                    <TableHead>Date Range</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                </TableHeader>
+                <TableBody>
+                  {filteredSchedules.map((schedule) => (
+                    <TableRow key={schedule.id}>
+                      <TableCell className="font-medium">{schedule.name}</TableCell>
+                      <TableCell>
+                        {format(parseISO(schedule.start_date), 'MMM d, yyyy')} - {format(parseISO(schedule.end_date), 'MMM d, yyyy')}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(schedule.status)}</TableCell>
+                      <TableCell>{format(parseISO(schedule.created_at), 'MMM d, yyyy')}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="outline" onClick={() => handleViewSchedule(schedule.id)}>
+                            View Details
+                          </Button>
+                          
+                          {schedule.status === 'pending' && (
+                            <>
+                              <Button size="sm" variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100" onClick={() => handleStatusChange(schedule.id, 'approved')}>
+                                Approve
+                              </Button>
+                              <Button size="sm" variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100" onClick={() => handleStatusChange(schedule.id, 'rejected')}>
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { fetchDepartments } from '@/services/departmentService';
-import { generateSchedule } from '@/services/scheduleService';
+import { generateSchedule, GenerateScheduleParams } from '@/services/scheduleService';
 import { Department } from '@/types/database';
 
 const scheduleGenerationSchema = z.object({
@@ -102,7 +102,16 @@ const ScheduleGenerationForm: React.FC = () => {
   const handleGenerate = async (data: z.infer<typeof scheduleGenerationSchema>) => {
     setIsGenerating(true);
     try {
-      await generateSchedule(data);
+      // Ensure we have all required fields before calling the API
+      const params: GenerateScheduleParams = {
+        department: data.department,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        preferences: data.preferences,
+        shiftDistribution: data.shiftDistribution
+      };
+      
+      await generateSchedule(params);
       toast({
         title: 'Schedule generated successfully',
         description: 'The schedule has been created and is pending approval.',

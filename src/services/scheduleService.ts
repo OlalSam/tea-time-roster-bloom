@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Schedule, ScheduleShift } from "@/types/database";
 import { addDays, format, differenceInDays } from 'date-fns';
 
-interface GenerateScheduleParams {
+export interface GenerateScheduleParams {
   department: string;
   startDate: Date;
   endDate: Date;
@@ -128,7 +128,7 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
       }
     }
     
-    return scheduleData;
+    return scheduleData as Schedule;
   } catch (error) {
     console.error('Error generating schedule:', error);
     throw error;
@@ -146,7 +146,7 @@ export async function fetchSchedules(): Promise<Schedule[]> {
     throw error;
   }
 
-  return data || [];
+  return data as Schedule[];
 }
 
 export async function fetchScheduleById(id: string): Promise<Schedule> {
@@ -161,7 +161,7 @@ export async function fetchScheduleById(id: string): Promise<Schedule> {
     throw error;
   }
 
-  return data;
+  return data as Schedule;
 }
 
 export async function fetchScheduleShifts(scheduleId: string): Promise<ScheduleShift[]> {
