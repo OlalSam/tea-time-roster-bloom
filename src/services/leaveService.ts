@@ -12,13 +12,28 @@ export interface LeaveRequest {
   created_at: string;
 }
 
-export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'created_at'>) {
+export async function createLeaveRequest(request: {
+  employee_id: string;
+  type: string;
+  start_date?: string;
+  end_date?: string;
+  startDate?: string;
+  endDate?: string;
+  reason: string;
+}) {
+  // Map form fields to database fields
+  const payload = {
+    employee_id: request.employee_id,
+    type: request.type,
+    start_date: request.start_date || request.startDate,
+    end_date: request.end_date || request.endDate,
+    reason: request.reason,
+    status: 'pending' as const
+  };
+
   const { data, error } = await supabase
     .from('leave_requests')
-    .insert({
-      ...request,
-      status: 'pending'
-    })
+    .insert(payload)
     .select()
     .single();
 
@@ -44,7 +59,8 @@ export async function fetchPendingLeaveRequests() {
       *,
       employees (
         id,
-        name,
+        first_name,
+        last_name,
         department_id
       )
     `)
@@ -62,4 +78,20 @@ export async function updateLeaveRequestStatus(id: string, status: 'approved' | 
     .eq('id', id);
 
   if (error) throw error;
+}
+
+// Add functions used in tests
+export async function submitLeaveRequest(leaveData: any) {
+  return await createLeaveRequest(leaveData);
+}
+
+export async function getLeaveBalance(employeeId: string) {
+  const { data, error } = await supabase
+    .from('employees')
+    .select('leave_balance')
+    .eq('id', employeeId)
+    .single();
+    
+  if (error) throw error;
+  return data?.leave_balance || 0;
 }

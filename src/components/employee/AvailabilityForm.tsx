@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { updateEmployeeAvailability } from '@/services/employeeService';
 import { useAuth } from '@/contexts/AuthContext';
+import { EmployeeAvailability } from '@/types/database';
 
 const DAYS = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 ];
 
-const AvailabilityForm = ({ currentAvailability }) => {
+const AvailabilityForm = ({ currentAvailability }: { currentAvailability: EmployeeAvailability[] }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
@@ -40,7 +40,8 @@ const AvailabilityForm = ({ currentAvailability }) => {
     try {
       const availabilityUpdates = DAYS.map((_, index) => ({
         day_of_week: index,
-        preference: selectedDays.includes(index) ? 'unavailable' : 'available'
+        preference: selectedDays.includes(index) ? 'unavailable' : 'available',
+        shift_type_id: '00000000-0000-0000-0000-000000000000' // Default shift type ID
       }));
 
       await updateEmployeeAvailability(user!.id, availabilityUpdates);

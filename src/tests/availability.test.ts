@@ -3,6 +3,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { supabase } from '@/integrations/supabase/client';
 import { updateAvailability, getAvailability } from '@/services/availabilityService';
 
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn().mockReturnThis(),
+    upsert: vi.fn(),
+    select: vi.fn(),
+    eq: vi.fn()
+  }
+}));
+
 describe('Availability Management', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,9 +27,10 @@ describe('Availability Management', () => {
     };
 
     const mockResponse = { data: mockAvailability, error: null };
-    vi.spyOn(supabase, 'from').mockImplementation(() => ({
-      upsert: vi.fn().mockResolvedValue(mockResponse)
-    }));
+    // @ts-ignore - Mocking Supabase client
+    supabase.from.mockReturnThis();
+    // @ts-ignore - Mocking Supabase upsert
+    supabase.upsert.mockResolvedValue(mockResponse);
 
     const result = await updateAvailability(mockAvailability);
     expect(result.error).toBeNull();
@@ -33,9 +43,12 @@ describe('Availability Management', () => {
       { day_of_week: 1, start_time: '09:00', end_time: '17:00' }
     ];
 
-    vi.spyOn(supabase, 'from').mockImplementation(() => ({
-      select: vi.fn().mockResolvedValue({ data: mockAvailabilityData, error: null })
-    }));
+    // @ts-ignore - Mocking Supabase client
+    supabase.from.mockReturnThis();
+    // @ts-ignore - Mocking Supabase select
+    supabase.select.mockReturnThis();
+    // @ts-ignore - Mocking Supabase eq
+    supabase.eq.mockResolvedValue({ data: mockAvailabilityData, error: null });
 
     const availability = await getAvailability(mockEmployeeId);
     expect(availability).toHaveLength(1);

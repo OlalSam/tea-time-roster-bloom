@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import type { EmployeeAvailability } from '@/services/employeeService';
+import type { EmployeeAvailability } from '@/types/database';
 
 export function useAvailabilityData() {
   const { user } = useAuth();
@@ -21,7 +21,8 @@ export function useAvailabilityData() {
           .eq('employee_id', user.id);
 
         if (fetchError) throw fetchError;
-        setAvailability(data || []);
+        // Cast the data to match our type definitions
+        setAvailability((data || []) as EmployeeAvailability[]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch availability');
       } finally {

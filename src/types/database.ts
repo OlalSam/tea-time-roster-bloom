@@ -16,6 +16,9 @@ export interface Employee {
   created_at: string;
   updated_at: string;
   departments?: Department;
+  role?: string;
+  profile_image?: string;
+  email?: string;
 }
 
 export interface ShiftType {

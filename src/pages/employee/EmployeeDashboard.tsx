@@ -1,3 +1,4 @@
+
 import React from 'react';
 import EmployeeLayout from '@/components/layout/EmployeeLayout';
 import UpcomingShiftCard from '@/components/employee/UpcomingShiftCard';
@@ -36,12 +37,14 @@ const EmployeeDashboard: React.FC = () => {
         <EmployeeStats />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <WeeklyScheduleCard shifts={shifts} />
+          {/* Pass shifts as a property named "data" to match the component's expectations */}
+          <WeeklyScheduleCard data={shifts} />
           <LeaveRequestCard />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UpcomingShiftCard isToday={true} shifts={shifts} />
+          {/* Pass shifts as a property named "data" to match the component's expectations */}
+          <UpcomingShiftCard isToday={true} data={shifts} />
           <ClockInOutCard />
         </div>
       </div>

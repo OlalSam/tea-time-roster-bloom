@@ -39,14 +39,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const { data } = await supabase
-      .from('employees')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    setIsAdmin(data?.role === 'admin');
-    setIsLoading(false);
+    try {
+      const { data } = await supabase
+        .from('employees')
+        .select('position')  // Using position instead of role
+        .eq('id', userId)
+        .single();
+      
+      // Check if position is 'admin' or 'manager'
+      setIsAdmin(data?.position === 'admin' || data?.position === 'manager');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

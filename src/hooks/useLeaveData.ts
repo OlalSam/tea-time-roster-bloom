@@ -16,7 +16,8 @@ export function useLeaveData() {
       try {
         setLoading(true);
         const data = await fetchEmployeeLeaveRequests(user.id);
-        setLeaveRequests(data);
+        // Cast the data to ensure it matches our LeaveRequest type
+        setLeaveRequests(data as LeaveRequest[]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch leave requests');
       } finally {

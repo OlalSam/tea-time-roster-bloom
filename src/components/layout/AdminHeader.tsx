@@ -50,14 +50,17 @@ const AdminHeader: React.FC = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
               <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src={employee?.profile_image} alt={employee?.first_name} />
-                <AvatarFallback className="bg-forest text-cream">
-                  {getInitials(employee?.first_name || '', employee?.last_name || '')}
-                </AvatarFallback>
+                {employee?.profile_image ? (
+                  <AvatarImage src={employee.profile_image} alt={employee?.first_name} />
+                ) : (
+                  <AvatarFallback className="bg-forest text-cream">
+                    {getInitials(employee?.first_name || '', employee?.last_name || '')}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div className="flex flex-col items-start text-sm">
                 <span className="font-medium">{`${employee?.first_name} ${employee?.last_name}`}</span>
-                <span className="text-xs text-muted-foreground">{employee?.role}</span>
+                <span className="text-xs text-muted-foreground">{employee?.position}</span>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>

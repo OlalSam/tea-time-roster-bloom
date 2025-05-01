@@ -1,14 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Employee } from "@/types/database";
-
-export interface EmployeeAvailability {
-  id: string;
-  employee_id: string;
-  day_of_week: number;
-  preference: 'preferred' | 'available' | 'unavailable';
-  shift_type_id: string;
-}
+import { Employee, EmployeeAvailability } from "@/types/database";
 
 export async function fetchEmployees(departmentId?: string): Promise<Employee[]> {
   let query = supabase
@@ -40,7 +32,7 @@ export async function fetchEmployeeAvailability(employeeId: string): Promise<Emp
     throw error;
   }
 
-  return data || [];
+  return data as EmployeeAvailability[] || [];
 }
 
 export async function createEmployee(employee: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
@@ -60,7 +52,7 @@ export async function createEmployee(employee: Omit<Employee, 'id' | 'created_at
 
 export async function updateEmployeeAvailability(
   employeeId: string,
-  availabilities: Omit<EmployeeAvailability, 'id' | 'employee_id'>[]
+  availabilities: Omit<EmployeeAvailability, 'id' | 'employee_id' | 'created_at' | 'updated_at'>[]
 ): Promise<void> {
   const { error } = await supabase
     .from('employee_availability')

@@ -16,7 +16,11 @@ export default function EmailSettings() {
     try {
       const { error } = await supabase
         .from('email_config')
-        .upsert({ id: 1, senderEmail, appPassword });
+        .upsert({ 
+          id: 1, 
+          sender_email: senderEmail,  // Match the DB column name
+          app_password: appPassword   // Match the DB column name
+        });
 
       if (error) throw error;
       toast({ title: 'Success', description: 'Email settings updated successfully' });

@@ -1,14 +1,14 @@
 
 import React from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { useEmployeeData } from '@/hooks/useEmployeeData';
+import { useEmployeesData } from '@/hooks/useEmployeesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 const EmployeeManagement = () => {
-  const { employees, isLoading } = useEmployeeData();
+  const { employees, isLoading } = useEmployeesData();
 
   if (isLoading) {
     return (
@@ -39,18 +39,16 @@ const EmployeeManagement = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Position</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {employees?.map((employee) => (
                   <TableRow key={employee.id}>
-                    <TableCell>{employee.name}</TableCell>
-                    <TableCell>{employee.department_id}</TableCell>
-                    <TableCell>{employee.role}</TableCell>
-                    <TableCell>{employee.status}</TableCell>
+                    <TableCell>{`${employee.first_name} ${employee.last_name}`}</TableCell>
+                    <TableCell>{employee.department_id || 'Not Assigned'}</TableCell>
+                    <TableCell>{employee.position}</TableCell>
                     <TableCell className="space-x-2">
                       <Button variant="outline" size="sm">
                         <Edit2 className="h-4 w-4" />

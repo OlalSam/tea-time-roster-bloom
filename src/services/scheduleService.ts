@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { Schedule, ScheduleShift } from "@/types/database";
+import { Schedule, ScheduleShift, EmployeeAvailability } from "@/types/database";
 import { addDays, format, differenceInDays } from 'date-fns';
+import { sendScheduleEmail } from "@/services/emailService";
 
 export interface GenerateScheduleParams {
   department: string;
@@ -18,10 +20,8 @@ export interface GenerateScheduleParams {
   };
 }
 
-// Placeholder for fetching employee availability.  Replace with your actual implementation.
-async function fetchEmployeeAvailability(employeeId: string): Promise<{ day_of_week: number; shift_type_id: string; preference: 'available' | 'preferred' | 'unavailable' }[]> {
-  // Replace with your actual Supabase query to fetch employee availability
-  // This example assumes a table named 'employee_availability' with columns: employee_id, day_of_week, shift_type_id, preference
+// Fetch employee availability
+async function fetchEmployeeAvailability(employeeId: string): Promise<EmployeeAvailability[]> {
   const { data, error } = await supabase
     .from('employee_availability')
     .select('*')
@@ -32,7 +32,7 @@ async function fetchEmployeeAvailability(employeeId: string): Promise<{ day_of_w
     throw error;
   }
 
-  return data || [];
+  return data as EmployeeAvailability[] || [];
 }
 
 
@@ -96,6 +96,7 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
         return Math.max(calculated, minRequired);
       };
 
+      const totalEmployees = employees.length;
       const MIN_EMPLOYEES_PER_SHIFT = 2;
       const morningCount = calculateRequiredEmployees(
         totalEmployees,
@@ -164,13 +165,12 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
 
       // Sort employees by availability for each shift
       const getAvailableEmployees = (date: Date, shiftTypeId: string) => {
-        const isWeekend = [0, 6].includes(date.getDay());
         return employees.filter(emp => isEmployeeAvailable(emp.id, date)).sort((a, b) => {
           const aAvail = availabilityMap.get(a.id)?.find(
-            av => av.day_of_week === date.getDay() && av.shift_type_id === shiftTypeId
+            (av: EmployeeAvailability) => av.day_of_week === date.getDay() && av.shift_type_id === shiftTypeId
           )?.preference || 'available';
           const bAvail = availabilityMap.get(b.id)?.find(
-            av => av.day_of_week === date.getDay() && av.shift_type_id === shiftTypeId
+            (av: EmployeeAvailability) => av.day_of_week === date.getDay() && av.shift_type_id === shiftTypeId
           )?.preference || 'available';
 
           if (aAvail === 'preferred' && bAvail !== 'preferred') return -1;
@@ -180,7 +180,6 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
           return 0;
         });
       };
-
 
       // Distribute shifts (this is a simple algorithm and can be improved)
       for (let i = 0; i < dayCount; i++) {
@@ -323,9 +322,9 @@ async function sendScheduleNotifications(scheduleId: string) {
         *,
         employees (
           id,
-          email,
           first_name,
-          last_name
+          last_name,
+          email
         ),
         shift_types (
           name,
@@ -338,39 +337,44 @@ async function sendScheduleNotifications(scheduleId: string) {
     if (shiftsError) throw shiftsError;
 
     // Group shifts by employee
-    const employeeShifts = shifts?.reduce((acc: any, shift) => {
+    const employeeShifts: Record<string, any> = {};
+    
+    shifts?.forEach(shift => {
       const employeeId = shift.employee_id;
-      if (!acc[employeeId]) {
-        acc[employeeId] = {
+      if (!employeeShifts[employeeId]) {
+        employeeShifts[employeeId] = {
           employee: shift.employees,
           shifts: []
         };
       }
-      acc[employeeId].shifts.push({
+      employeeShifts[employeeId].shifts.push({
         shift_date: shift.shift_date,
         shift_type: shift.shift_types
       });
-      return acc;
-    }, {});
+    });
 
     // Send email to each employee
     for (const employeeId in employeeShifts) {
       const { employee, shifts } = employeeShifts[employeeId];
-      await sendScheduleEmail(employee.email, { shifts });
+      if (employee?.email) {
+        await sendScheduleEmail(employee.email, { shifts });
+      }
     }
 
     // Send summary to admin
-    const { data: adminEmails } = await supabase
+    const { data: adminEmployees } = await supabase
       .from('employees')
-      .select('email')
-      .eq('role', 'admin');
+      .select('first_name, last_name, email, position')
+      .eq('position', 'admin');
 
-    if (adminEmails) {
-      for (const admin of adminEmails) {
-        await sendScheduleEmail(admin.email, { 
-          shifts: Object.values(employeeShifts).flatMap((e: any) => e.shifts),
-          isAdminSummary: true 
-        });
+    if (adminEmployees) {
+      for (const admin of adminEmployees) {
+        if (admin.email) {
+          await sendScheduleEmail(admin.email, { 
+            shifts: Object.values(employeeShifts).flatMap((e: any) => e.shifts),
+            isAdminSummary: true 
+          });
+        }
       }
     }
   } catch (error) {

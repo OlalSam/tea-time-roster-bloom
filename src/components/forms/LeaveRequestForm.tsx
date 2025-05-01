@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createLeaveRequest } from '@/services/leaveService';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LeaveRequestFormData {
   type: string;
@@ -19,12 +21,25 @@ interface LeaveRequestFormData {
 const LeaveRequestForm: React.FC = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveRequestFormData>();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const onSubmit = async (data: LeaveRequestFormData) => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to submit a leave request',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       await createLeaveRequest({
-        employee_id: 'current_user_id', // Replace with actual user ID from auth
-        ...data
+        employee_id: user.id,
+        type: data.type,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason
       });
 
       toast({
