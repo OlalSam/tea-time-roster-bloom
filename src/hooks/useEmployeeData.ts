@@ -16,17 +16,33 @@ export function useEmployeeData() {
       if (!user?.id) return;
 
       try {
+        console.log("Fetching employee data for user:", user.id);
+        
         const { data: employeeData, error: employeeError } = await supabase
           .from('employees')
           .select('*, departments(*)')
           .eq('id', user.id)
           .single();
 
-        if (employeeError) throw employeeError;
+        if (employeeError) {
+          console.error("Error fetching employee:", employeeError);
+          
+          // Check if the error is a not found error
+          if (employeeError.code === 'PGRST116') {
+            // No matching row found - might be a new user
+            console.log("No employee record found for this user. They might be new.");
+          }
+          
+          throw employeeError;
+        }
         
-        setEmployee(employeeData);
-        setDepartment(employeeData.departments);
+        if (employeeData) {
+          console.log("Employee data retrieved:", employeeData);
+          setEmployee(employeeData);
+          setDepartment(employeeData.departments);
+        }
       } catch (err) {
+        console.error("Error in useEmployeeData hook:", err);
         setError(err instanceof Error ? err.message : 'Failed to fetch employee data');
       } finally {
         setIsLoading(false);

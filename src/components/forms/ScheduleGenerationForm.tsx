@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,8 +108,16 @@ const ScheduleGenerationForm: React.FC = () => {
         department: data.department,
         startDate: data.startDate,
         endDate: data.endDate,
-        preferences: data.preferences,
-        shiftDistribution: data.shiftDistribution
+        preferences: {
+          balanceWeekends: data.preferences.balanceWeekends,
+          considerEmployeeRequests: data.preferences.considerEmployeeRequests,
+          optimizeForEfficiency: data.preferences.optimizeForEfficiency,
+        },
+        shiftDistribution: {
+          morningRatio: data.shiftDistribution.morningRatio,
+          afternoonRatio: data.shiftDistribution.afternoonRatio,
+          nightRatio: data.shiftDistribution.nightRatio,
+        }
       };
       
       await generateSchedule(params);

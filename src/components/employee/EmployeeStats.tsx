@@ -1,16 +1,36 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEmployeeData } from '@/hooks/useEmployeeData';
 import { useScheduleData } from '@/hooks/useScheduleData';
 
 const EmployeeStats: React.FC = () => {
-  const { employee } = useEmployeeData();
-  const { shifts } = useScheduleData();
+  const { employee, department, error: employeeError } = useEmployeeData();
+  const { shifts, error: shiftsError } = useScheduleData();
+
+  useEffect(() => {
+    if (employeeError) {
+      console.error('Error fetching employee data:', employeeError);
+    }
+    if (shiftsError) {
+      console.error('Error fetching shifts data:', shiftsError);
+    }
+  }, [employeeError, shiftsError]);
 
   const totalHoursThisWeek = shifts?.reduce((acc, shift) => {
-    const duration = new Date(shift.end_time).getTime() - new Date(shift.start_time).getTime();
-    return acc + (duration / (1000 * 60 * 60));
+    if (shift && shift.shift_types) {
+      const startTime = new Date(`2000-01-01T${shift.shift_types.start_time}`);
+      const endTime = new Date(`2000-01-01T${shift.shift_types.end_time}`);
+      let duration = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+      
+      // If end time is before start time, it means the shift crosses midnight
+      if (duration < 0) {
+        duration += 24;
+      }
+      
+      return acc + duration;
+    }
+    return acc;
   }, 0) || 0;
 
   return (

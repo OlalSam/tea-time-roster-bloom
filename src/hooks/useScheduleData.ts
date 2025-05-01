@@ -15,6 +15,8 @@ export function useScheduleData() {
       if (!user?.id) return;
 
       try {
+        console.log("Fetching schedule data for user:", user.id);
+        
         const startOfWeek = new Date();
         startOfWeek.setHours(0, 0, 0, 0);
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -26,12 +28,18 @@ export function useScheduleData() {
             shift_types(*)
           `)
           .eq('employee_id', user.id)
-          .gte('shift_date', startOfWeek.toISOString())
+          .gte('shift_date', startOfWeek.toISOString().split('T')[0])
           .order('shift_date', { ascending: true });
 
-        if (shiftsError) throw shiftsError;
-        setShifts(data);
+        if (shiftsError) {
+          console.error("Error fetching shifts:", shiftsError);
+          throw shiftsError;
+        }
+        
+        console.log("Schedule data retrieved:", data);
+        setShifts(data || []);
       } catch (err) {
+        console.error("Error in useScheduleData hook:", err);
         setError(err instanceof Error ? err.message : 'Failed to fetch schedule data');
       } finally {
         setIsLoading(false);

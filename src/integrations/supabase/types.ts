@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clock_records: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clock_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string | null
@@ -29,6 +67,75 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      email_config: {
+        Row: {
+          app_password: string
+          created_at: string | null
+          id: number
+          sender_email: string
+          updated_at: string | null
+        }
+        Insert: {
+          app_password: string
+          created_at?: string | null
+          id: number
+          sender_email: string
+          updated_at?: string | null
+        }
+        Update: {
+          app_password?: string
+          created_at?: string | null
+          id?: number
+          sender_email?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      employee_availability: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          employee_id: string
+          id: string
+          preference: string
+          shift_type_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          employee_id: string
+          id?: string
+          preference: string
+          shift_type_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          employee_id?: string
+          id?: string
+          preference?: string
+          shift_type_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_availability_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_availability_shift_type_id_fkey"
+            columns: ["shift_type_id"]
+            isOneToOne: false
+            referencedRelation: "shift_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
@@ -64,6 +171,50 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          reason: string | null
+          start_date: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          reason?: string | null
+          start_date: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          reason?: string | null
+          start_date?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
