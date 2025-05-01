@@ -28,10 +28,10 @@ describe('Availability Management', () => {
 
     const mockResponse = { data: mockAvailability, error: null };
     
-    // Properly mock the supabase client
-    vi.spyOn(supabase, 'from').mockReturnValue({
+    // Fix the mock implementation
+    (supabase.from as any).mockImplementation(() => ({
       upsert: () => Promise.resolve(mockResponse)
-    } as any);
+    }));
 
     const result = await updateAvailability(mockAvailability);
     expect(result.error).toBeNull();
@@ -52,12 +52,12 @@ describe('Availability Management', () => {
       }
     ];
 
-    // Properly mock the supabase client for this test case
-    vi.spyOn(supabase, 'from').mockReturnValue({
+    // Fix the mock implementation
+    (supabase.from as any).mockImplementation(() => ({
       select: () => ({
         eq: () => Promise.resolve({ data: mockAvailabilityData, error: null })
       })
-    } as any);
+    }));
 
     const availability = await getAvailability(mockEmployeeId);
     expect(availability).toHaveLength(1);

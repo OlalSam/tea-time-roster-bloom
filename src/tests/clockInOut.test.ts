@@ -25,19 +25,19 @@ describe('Clock Service', () => {
       error: null
     };
 
-    // Fix the spy implementation to return a properly mocked response
-    const spy = vi.spyOn(supabase, 'from').mockReturnValue({
+    // Fix the spy implementation
+    (supabase.from as any).mockImplementation(() => ({
       insert: () => ({
         select: () => ({
           single: () => Promise.resolve(mockResponse)
         })
       })
-    } as any);
+    }));
 
     const result = await clockIn('456');
     expect(result).toHaveProperty('data');
     expect(result).not.toHaveProperty('error');
-    expect(spy).toHaveBeenCalledWith('clock_records');
+    expect(supabase.from).toHaveBeenCalledWith('clock_records');
   });
 
   it('should clock out a user successfully', async () => {
@@ -46,18 +46,18 @@ describe('Clock Service', () => {
       error: null
     };
 
-    // Fix the spy implementation to return a properly mocked response
-    const spy = vi.spyOn(supabase, 'from').mockReturnValue({
+    // Fix the spy implementation
+    (supabase.from as any).mockImplementation(() => ({
       update: () => ({
         eq: () => ({
           single: () => Promise.resolve(mockResponse)
         })
       })
-    } as any);
+    }));
 
     const result = await clockOut('123');
     expect(result).toHaveProperty('data');
     expect(result).not.toHaveProperty('error');
-    expect(spy).toHaveBeenCalledWith('clock_records');
+    expect(supabase.from).toHaveBeenCalledWith('clock_records');
   });
 });
