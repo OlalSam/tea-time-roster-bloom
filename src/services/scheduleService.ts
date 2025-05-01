@@ -113,24 +113,59 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
         MIN_EMPLOYEES_PER_SHIFT
       );
 
-      // Validate employee rest periods and max consecutive days
-      const hasAdequateRest = (employeeId: string, date: Date) => {
+      // Track weekend assignments for fair rotation
+      const weekendAssignments = new Map<string, number>();
+      employees.forEach(emp => weekendAssignments.set(emp.id, 0));
+
+      // Fetch active leave requests for the schedule period
+      const { data: leaveRequests } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .gte('start_date', format(params.startDate, 'yyyy-MM-dd'))
+        .lte('end_date', format(params.endDate, 'yyyy-MM-dd'))
+        .eq('status', 'approved');
+
+      // Check if employee is on leave
+      const isOnLeave = (employeeId: string, date: Date) => {
+        return leaveRequests?.some(leave => 
+          leave.employee_id === employeeId &&
+          new Date(leave.start_date) <= date &&
+          new Date(leave.end_date) >= date
+        ) ?? false;
+      };
+
+      // Validate employee rest periods, weekend rotation, and leave conflicts
+      const isEmployeeAvailable = (employeeId: string, date: Date) => {
+        // Check leave conflicts
+        if (isOnLeave(employeeId, date)) return false;
+
+        // Check rest periods
         const previousShifts = shifts.filter(s => 
           s.employee_id === employeeId && 
           new Date(s.shift_date).getTime() < date.getTime()
         );
         
-        if (previousShifts.length === 0) return true;
-        
-        const lastShift = new Date(previousShifts[previousShifts.length - 1].shift_date);
-        const hoursSinceLastShift = (date.getTime() - lastShift.getTime()) / (1000 * 60 * 60);
-        
-        return hoursSinceLastShift >= 12;
+        if (previousShifts.length > 0) {
+          const lastShift = new Date(previousShifts[previousShifts.length - 1].shift_date);
+          const hoursSinceLastShift = (date.getTime() - lastShift.getTime()) / (1000 * 60 * 60);
+          if (hoursSinceLastShift < 12) return false;
+        }
+
+        // Check weekend fairness
+        const isWeekend = [0, 6].includes(date.getDay());
+        if (isWeekend) {
+          const currentWeekendCount = weekendAssignments.get(employeeId) || 0;
+          const avgWeekendCount = Math.round(Array.from(weekendAssignments.values()).reduce((a, b) => a + b, 0) / employees.length);
+          if (currentWeekendCount > avgWeekendCount) return false;
+        }
+
+        return true;
       };
 
       // Sort employees by availability for each shift
       const getAvailableEmployees = (date: Date, shiftTypeId: string) => {
-        return employees.sort((a, b) => {
+        const isWeekend = [0, 6].includes(date.getDay());
+        return employees.filter(emp => isEmployeeAvailable(emp.id, date)).sort((a, b) => {
           const aAvail = availabilityMap.get(a.id)?.find(
             av => av.day_of_week === date.getDay() && av.shift_type_id === shiftTypeId
           )?.preference || 'available';
@@ -158,12 +193,18 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
         if (morningShift) {
           const availableEmployees = getAvailableEmployees(currentDate, morningShift.id);
           for (let j = 0; j < morningCount && j < availableEmployees.length; j++) {
+            const employeeId = availableEmployees[j].id;
             shifts.push({
               schedule_id: scheduleData.id,
-              employee_id: availableEmployees[j].id,
+              employee_id: employeeId,
               shift_type_id: morningShift.id,
               shift_date: currentDateStr
             });
+            
+            // Update weekend assignment count
+            if ([0, 6].includes(currentDate.getDay())) {
+              weekendAssignments.set(employeeId, (weekendAssignments.get(employeeId) || 0) + 1);
+            }
           }
         }
 
