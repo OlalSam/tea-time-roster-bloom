@@ -18,6 +18,9 @@ import ScheduleDetail from "./pages/admin/ScheduleDetail";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import ClockInOut from "./pages/employee/ClockInOut";
 import LeaveManagement from "./pages/employee/LeaveManagement";
+import AvailabilityManagement from "./pages/employee/AvailabilityManagement";
+import EmployeeProfile from "./pages/employee/EmployeeProfile";
+import EmployeeSettings from "./pages/employee/EmployeeSettings";
 
 // Auth Routes
 import Login from "./pages/auth/Login";
@@ -47,6 +50,9 @@ const App = () => (
             <Route path="/employee" element={<EmployeeDashboard />} />
             <Route path="/employee/clock" element={<ClockInOut />} />
             <Route path="/employee/leave" element={<LeaveManagement />} />
+            <Route path="/employee/availability" element={<AvailabilityManagement />} />
+            <Route path="/employee/profile" element={<EmployeeProfile />} />
+            <Route path="/employee/settings" element={<EmployeeSettings />} />
 
             {/* Redirects for convenience */}
             <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
