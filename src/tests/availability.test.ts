@@ -27,10 +27,11 @@ describe('Availability Management', () => {
     };
 
     const mockResponse = { data: mockAvailability, error: null };
-    // @ts-ignore - Mocking Supabase client
-    supabase.from.mockReturnThis();
-    // @ts-ignore - Mocking Supabase upsert
-    supabase.upsert.mockResolvedValue(mockResponse);
+    
+    // Properly mock the supabase client
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      upsert: () => Promise.resolve(mockResponse)
+    } as any);
 
     const result = await updateAvailability(mockAvailability);
     expect(result.error).toBeNull();
@@ -40,15 +41,23 @@ describe('Availability Management', () => {
   it('should retrieve employee availability', async () => {
     const mockEmployeeId = '123';
     const mockAvailabilityData = [
-      { day_of_week: 1, start_time: '09:00', end_time: '17:00' }
+      { 
+        day_of_week: 1, 
+        preference: 'preferred' as const,
+        id: '1',
+        employee_id: '123',
+        shift_type_id: 'abc',
+        created_at: '2023-01-01',
+        updated_at: '2023-01-01'
+      }
     ];
 
-    // @ts-ignore - Mocking Supabase client
-    supabase.from.mockReturnThis();
-    // @ts-ignore - Mocking Supabase select
-    supabase.select.mockReturnThis();
-    // @ts-ignore - Mocking Supabase eq
-    supabase.eq.mockResolvedValue({ data: mockAvailabilityData, error: null });
+    // Properly mock the supabase client for this test case
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      select: () => ({
+        eq: () => Promise.resolve({ data: mockAvailabilityData, error: null })
+      })
+    } as any);
 
     const availability = await getAvailability(mockEmployeeId);
     expect(availability).toHaveLength(1);

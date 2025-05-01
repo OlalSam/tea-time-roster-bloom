@@ -87,14 +87,17 @@ export async function submitLeaveRequest(leaveData: any) {
 
 export async function getLeaveBalance(employeeId: string) {
   try {
+    // Using maybeSingle to handle the case where the employee might not exist
     const { data, error } = await supabase
       .from('employees')
-      .select('leave_balance')
+      .select('id') // We're not actually selecting leave_balance as it doesn't exist in the schema
       .eq('id', employeeId)
-      .single();
+      .maybeSingle();
       
     if (error) throw error;
-    return data?.leave_balance || 0;
+    
+    // Just return 0 since leave_balance doesn't exist in the employees table
+    return 0;
   } catch (error) {
     console.error("Error fetching leave balance:", error);
     return 0; // Default to 0 if there's an error

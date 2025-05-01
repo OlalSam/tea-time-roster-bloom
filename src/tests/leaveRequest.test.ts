@@ -27,14 +27,15 @@ describe('Leave Request Functionality', () => {
     };
 
     const mockResponse = { data: { id: 1 }, error: null };
-    // @ts-ignore - Mocking Supabase client
-    supabase.from.mockReturnThis();
-    // @ts-ignore - Mocking Supabase insert
-    supabase.insert.mockReturnThis();
-    // @ts-ignore - Mocking Supabase select
-    supabase.select.mockReturnThis();
-    // @ts-ignore - Mocking Supabase single
-    supabase.single = vi.fn().mockResolvedValue(mockResponse);
+    
+    // Properly mock the supabase client
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      insert: () => ({
+        select: () => ({
+          single: () => Promise.resolve(mockResponse)
+        })
+      })
+    } as any);
 
     try {
       await createLeaveRequest(mockLeaveData);
