@@ -1,0 +1,38 @@
+➜  press h + enter to show help
+12:05:09 PM [vite] Pre-transform error: Failed to resolve import "@/hooks/data" from "src/pages/employee/EmployeeDashboard.tsx". Does the file exist?
+Error processing file src/components/employee/ClockInOutCard.tsx: SyntaxError: Identifier 'useState' has already been declared. (9:9)
+    at constructor (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:19082)
+    at TypeScriptParserMixin.raise (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:178064)
+    at TypeScriptScopeHandler.declareName (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:140903)
+    at TypeScriptParserMixin.declareNameFromIdentifier (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:199448)
+    at TypeScriptParserMixin.checkIdentifier (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:199347)
+    at TypeScriptParserMixin.checkLVal (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:197749)
+    at TypeScriptParserMixin.finishImportSpecifier (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:384943)
+    at TypeScriptParserMixin.parseImportSpecifier (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:388897)
+    at TypeScriptParserMixin.parseImportSpecifier (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:271079)
+    at TypeScriptParserMixin.parseNamedImportSpecifiers (/home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/@babel/parser/lib/index.js:1:388278) {
+  code: 'BABEL_PARSER_SYNTAX_ERROR',
+  reasonCode: 'VarRedeclaration',
+  loc: Position { line: 9, column: 9, index: 417 },
+  pos: 417,
+  syntaxPlugin: undefined
+}
+12:05:12 PM [vite] Internal server error: Failed to resolve import "@/hooks/data" from "src/pages/employee/EmployeeDashboard.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/olal/NetBeansProjects/tea-time-roster-bloom/src/pages/employee/EmployeeDashboard.tsx:6:49
+  25 |  import WeeklyScheduleCard from '@/components/employee/WeeklyScheduleCard';
+  26 |  import LeaveRequestCard from '@/components/employee/LeaveRequestCard';
+  27 |  import { useEmployeeData, useScheduleData } from '@/hooks/data'; // Assuming these hooks exist
+     |                                                    ^
+  28 |  import EmployeeStats from '@/components/employee/EmployeeStats'; // Assumed component
+  29 |  import ClockInOutCard from '@/components/employee/ClockInOutCard'; // Assumed component
+      at TransformPluginContext._formatError (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49258:41)
+      at TransformPluginContext.error (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49253:16)
+      at normalizeUrl (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64291:23)
+      at async file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64423:39
+      at async Promise.all (index 8)
+      at async TransformPluginContext.transform (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64350:7)
+      at async PluginContainer.transform (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+      at async viteTransformMiddleware (file:///home/olal/NetBeansProjects/tea-time-roster-bloom/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:62105:24)
+
