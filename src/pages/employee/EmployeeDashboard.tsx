@@ -4,9 +4,9 @@ import UpcomingShiftCard from '@/components/employee/UpcomingShiftCard';
 import WeeklyScheduleCard from '@/components/employee/WeeklyScheduleCard';
 import LeaveRequestCard from '@/components/employee/LeaveRequestCard';
 import { useEmployeeData } from '@/hooks/useEmployeeData';
-import { useScheduleData } from '@/hooks/useScheduleData'; // Assuming these hooks exist
-import EmployeeStats from '@/components/employee/EmployeeStats'; // Assumed component
-import ClockInOutCard from '@/components/employee/ClockInOutCard'; // Assumed component
+import { useScheduleData } from '@/hooks/useScheduleData';
+import EmployeeStats from '@/components/employee/EmployeeStats';
+import ClockInOutCard from '@/components/employee/ClockInOutCard';
 
 
 const EmployeeDashboard: React.FC = () => {
