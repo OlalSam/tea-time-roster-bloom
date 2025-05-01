@@ -1,6 +1,8 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Bell, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEmployeeData } from '@/hooks/useEmployeeData';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +11,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signOut } from '@/services/authService'; // Import signOut function
-import { useNavigate } from 'react-router-dom'; // Define navigation
+import { signOut } from '@/services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const AdminHeader: React.FC = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
+  const { employee, isLoading } = useEmployeeData();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  if (isLoading) {
+    return <div className="h-16 bg-white border-b border-border animate-pulse" />;
+  }
 
   return (
     <header className="bg-white border-b border-border py-3 px-6 flex items-center justify-between">
@@ -21,7 +33,9 @@ const AdminHeader: React.FC = () => {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
         <input
           type="text"
-          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search employees, schedules..."
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
         />
       </div>
@@ -36,12 +50,14 @@ const AdminHeader: React.FC = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
               <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src="/placeholder.svg" alt="Admin" />
-                <AvatarFallback className="bg-forest text-cream">AM</AvatarFallback>
+                <AvatarImage src={employee?.profile_image} alt={employee?.first_name} />
+                <AvatarFallback className="bg-forest text-cream">
+                  {getInitials(employee?.first_name || '', employee?.last_name || '')}
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start text-sm">
-                <span className="font-medium">Alex Morgan</span>
-                <span className="text-xs text-muted-foreground">Admin</span>
+                <span className="font-medium">{`${employee?.first_name} ${employee?.last_name}`}</span>
+                <span className="text-xs text-muted-foreground">{employee?.role}</span>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
@@ -51,8 +67,8 @@ const AdminHeader: React.FC = () => {
             <DropdownMenuItem onClick={() => navigate('/admin/settings')}>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
-              await signOut(); // Call signOut function from authService
-              navigate('/login'); // Navigate to login page after sign out
+              await signOut();
+              navigate('/login');
             }} className="text-destructive">
               Log out
             </DropdownMenuItem>

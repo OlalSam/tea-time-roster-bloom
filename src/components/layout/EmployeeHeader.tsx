@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useEmployeeData } from '@/hooks/useEmployeeData';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { signOut } from '@/services/authService'; // Or your auth library
-
+import { signOut } from '@/services/authService';
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -72,8 +72,17 @@ const MobileNavItem: React.FC<NavItemProps> = ({ icon, label, to, active }) => {
 
 const EmployeeHeader: React.FC = () => {
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { employee, isLoading } = useEmployeeData();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  if (isLoading) {
+    return <div className="h-16 bg-white border-b border-border animate-pulse" />;
+  }
 
   return (
     <header className="bg-white border-b border-border">
@@ -127,12 +136,14 @@ const EmployeeHeader: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
                 <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src="/placeholder.svg" alt="Employee" />
-                  <AvatarFallback className="bg-mint text-forest">JD</AvatarFallback>
+                  <AvatarImage src={employee?.profile_image} alt={employee?.first_name} />
+                  <AvatarFallback className="bg-mint text-forest">
+                    {getInitials(employee?.first_name || '', employee?.last_name || '')}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col items-start text-sm">
-                  <span className="font-medium">John Doe</span>
-                  <span className="text-xs text-muted-foreground">Tea Processor</span>
+                  <span className="font-medium">{`${employee?.first_name} ${employee?.last_name}`}</span>
+                  <span className="text-xs text-muted-foreground">{employee?.position}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -180,12 +191,14 @@ const EmployeeHeader: React.FC = () => {
               <div className="flex flex-col h-full">
                 <div className="flex items-center gap-3 py-4 mb-2">
                   <Avatar className="h-10 w-10 border border-border">
-                    <AvatarImage src="/placeholder.svg" alt="Employee" />
-                    <AvatarFallback className="bg-mint text-forest">JD</AvatarFallback>
+                    <AvatarImage src={employee?.profile_image} alt={employee?.first_name} />
+                    <AvatarFallback className="bg-mint text-forest">
+                      {getInitials(employee?.first_name || '', employee?.last_name || '')}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-sm text-muted-foreground">Tea Processor</p>
+                    <h3 className="font-medium">{`${employee?.first_name} ${employee?.last_name}`}</h3>
+                    <p className="text-sm text-muted-foreground">{employee?.position}</p>
                   </div>
                 </div>
 
