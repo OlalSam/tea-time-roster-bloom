@@ -90,11 +90,43 @@ export async function generateSchedule(params: GenerateScheduleParams): Promise<
         availabilityMap.set(employees[index].id, empAvail);
       });
 
-      // Calculate how many employees we need for each shift type based on distribution
-      const totalEmployees = employees.length;
-      const morningCount = Math.round(totalEmployees * (params.shiftDistribution.morningRatio / 100));
-      const afternoonCount = Math.round(totalEmployees * (params.shiftDistribution.afternoonRatio / 100));
-      const nightCount = Math.round(totalEmployees * (params.shiftDistribution.nightRatio / 100));
+      // Calculate required employees per shift based on workload and distribution
+      const calculateRequiredEmployees = (total: number, ratio: number, minRequired: number) => {
+        const calculated = Math.round(total * (ratio / 100));
+        return Math.max(calculated, minRequired);
+      };
+
+      const MIN_EMPLOYEES_PER_SHIFT = 2;
+      const morningCount = calculateRequiredEmployees(
+        totalEmployees,
+        params.shiftDistribution.morningRatio,
+        MIN_EMPLOYEES_PER_SHIFT
+      );
+      const afternoonCount = calculateRequiredEmployees(
+        totalEmployees,
+        params.shiftDistribution.afternoonRatio,
+        MIN_EMPLOYEES_PER_SHIFT
+      );
+      const nightCount = calculateRequiredEmployees(
+        totalEmployees,
+        params.shiftDistribution.nightRatio,
+        MIN_EMPLOYEES_PER_SHIFT
+      );
+
+      // Validate employee rest periods and max consecutive days
+      const hasAdequateRest = (employeeId: string, date: Date) => {
+        const previousShifts = shifts.filter(s => 
+          s.employee_id === employeeId && 
+          new Date(s.shift_date).getTime() < date.getTime()
+        );
+        
+        if (previousShifts.length === 0) return true;
+        
+        const lastShift = new Date(previousShifts[previousShifts.length - 1].shift_date);
+        const hoursSinceLastShift = (date.getTime() - lastShift.getTime()) / (1000 * 60 * 60);
+        
+        return hoursSinceLastShift >= 12;
+      };
 
       // Sort employees by availability for each shift
       const getAvailableEmployees = (date: Date, shiftTypeId: string) => {
