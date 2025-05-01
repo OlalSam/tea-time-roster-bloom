@@ -21,8 +21,14 @@ export function useAvailabilityData() {
           .eq('employee_id', user.id);
 
         if (fetchError) throw fetchError;
-        // Cast the data to match our type definitions
-        setAvailability((data || []) as EmployeeAvailability[]);
+        
+        // Cast the data to match our type definitions, ensuring preference is properly typed
+        const typedData = (data || []).map(item => ({
+          ...item,
+          preference: item.preference as 'preferred' | 'available' | 'unavailable'
+        }));
+        
+        setAvailability(typedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch availability');
       } finally {

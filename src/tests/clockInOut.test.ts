@@ -1,55 +1,64 @@
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { supabase } from '@/integrations/supabase/client';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { clockIn, clockOut } from '@/services/clockService';
+import { supabase } from '@/integrations/supabase/client';
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn().mockReturnThis(),
-    insert: vi.fn(),
-    update: vi.fn(),
-    select: vi.fn(),
-    eq: vi.fn()
+    from: vi.fn(() => ({
+      insert: vi.fn(() => ({ select: vi.fn(() => ({ single: vi.fn() })) })),
+      update: vi.fn(() => ({ eq: vi.fn(() => ({ single: vi.fn() })) })),
+      select: vi.fn(() => ({ eq: vi.fn(() => ({ single: vi.fn() })) }))
+    }))
   }
 }));
 
-describe('Clock In/Out Functionality', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('should record clock in time', async () => {
-    const mockEmployeeId = '123';
-    const mockTime = new Date('2024-03-19T09:00:00');
-    vi.setSystemTime(mockTime);
-
-    const mockResponse = { 
-      data: { id: 1, employee_id: mockEmployeeId, clock_in: mockTime }, 
-      error: null 
-    };
-
-    // @ts-ignore - Mocking Supabase client
-    supabase.from.mockReturnThis();
-    // @ts-ignore - Mocking Supabase insert
-    supabase.insert.mockResolvedValue(mockResponse);
-
-    try {
-      await clockIn(mockEmployeeId);
-      expect(supabase.from).toHaveBeenCalledWith('clock_records');
-      // Add more specific assertions based on your actual implementation
-    } catch (error) {
-      // Handle test errors
-      expect(error).toBeUndefined();
-    }
-  });
+// Use vi.beforeEach instead of afterEach
+beforeEach(() => {
+  vi.resetAllMocks();
 });
 
-// Add a helper function to match the expected imports
-export function getTimeEntries(employeeId: string, date: string) {
-  return [];
-}
+describe('Clock Service', () => {
+  it('should clock in a user successfully', async () => {
+    const mockResponse = {
+      data: { id: '123', employee_id: '456', clock_in: new Date().toISOString() },
+      error: null
+    };
+
+    const spy = vi.spyOn(supabase.from('clock_records'), 'insert');
+    spy.mockImplementation(() => ({
+      select: () => ({
+        single: () => Promise.resolve(mockResponse)
+      })
+    }));
+
+    const result = await clockIn('456');
+    expect(result).toHaveProperty('data');
+    expect(result).not.toHaveProperty('error');
+    expect(spy).toHaveBeenCalledWith({
+      employee_id: '456',
+      clock_in: expect.any(String)
+    });
+  });
+
+  it('should clock out a user successfully', async () => {
+    const mockResponse = {
+      data: { id: '123', clock_out: new Date().toISOString(), total_hours: 8 },
+      error: null
+    };
+
+    const spy = vi.spyOn(supabase.from('clock_records'), 'update');
+    spy.mockImplementation(() => ({
+      eq: () => ({
+        single: () => Promise.resolve(mockResponse)
+      })
+    }));
+
+    const result = await clockOut('123');
+    expect(result).toHaveProperty('data');
+    expect(result).not.toHaveProperty('error');
+    expect(spy).toHaveBeenCalledWith({
+      clock_out: expect.any(String)
+    });
+  });
+});

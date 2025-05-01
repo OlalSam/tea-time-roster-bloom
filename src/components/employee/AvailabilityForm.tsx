@@ -40,7 +40,7 @@ const AvailabilityForm = ({ currentAvailability }: { currentAvailability: Employ
     try {
       const availabilityUpdates = DAYS.map((_, index) => ({
         day_of_week: index,
-        preference: selectedDays.includes(index) ? 'unavailable' : 'available',
+        preference: selectedDays.includes(index) ? 'unavailable' : 'available' as 'preferred' | 'available' | 'unavailable',
         shift_type_id: '00000000-0000-0000-0000-000000000000' // Default shift type ID
       }));
 

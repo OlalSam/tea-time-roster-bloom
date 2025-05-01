@@ -7,9 +7,10 @@ import { Clock, Calendar, MapPin } from 'lucide-react';
 
 interface UpcomingShiftCardProps {
   isToday?: boolean;
+  data?: any; // Add this prop but make it optional
 }
 
-const UpcomingShiftCard: React.FC<UpcomingShiftCardProps> = ({ isToday = false }) => {
+const UpcomingShiftCard: React.FC<UpcomingShiftCardProps> = ({ isToday = false, data }) => {
   return (
     <Card className="tea-shadow-md">
       <CardHeader className="pb-2">

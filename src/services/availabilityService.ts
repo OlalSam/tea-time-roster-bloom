@@ -19,5 +19,10 @@ export async function getAvailability(employeeId: string) {
     .eq('employee_id', employeeId);
 
   if (error) throw error;
-  return data as EmployeeAvailability[];
+  
+  // Cast the data to ensure it matches our type definition
+  return (data || []).map(item => ({
+    ...item,
+    preference: item.preference as 'preferred' | 'available' | 'unavailable'
+  })) as EmployeeAvailability[];
 }

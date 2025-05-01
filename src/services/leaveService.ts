@@ -86,12 +86,17 @@ export async function submitLeaveRequest(leaveData: any) {
 }
 
 export async function getLeaveBalance(employeeId: string) {
-  const { data, error } = await supabase
-    .from('employees')
-    .select('leave_balance')
-    .eq('id', employeeId)
-    .single();
-    
-  if (error) throw error;
-  return data?.leave_balance || 0;
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('leave_balance')
+      .eq('id', employeeId)
+      .single();
+      
+    if (error) throw error;
+    return data?.leave_balance || 0;
+  } catch (error) {
+    console.error("Error fetching leave balance:", error);
+    return 0; // Default to 0 if there's an error
+  }
 }

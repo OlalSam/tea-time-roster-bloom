@@ -9,7 +9,7 @@ import { useScheduleData } from '@/hooks/useScheduleData';
 import EmployeeStats from '@/components/employee/EmployeeStats';
 import ClockInOutCard from '@/components/employee/ClockInOutCard';
 
-
+// Update UpcomingShiftCard component to accept the shifts data
 const EmployeeDashboard: React.FC = () => {
   const { employee, department, isLoading: isEmployeeLoading } = useEmployeeData();
   const { shifts, isLoading: isScheduleLoading } = useScheduleData();
@@ -37,14 +37,12 @@ const EmployeeDashboard: React.FC = () => {
         <EmployeeStats />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Pass shifts as a property named "data" to match the component's expectations */}
-          <WeeklyScheduleCard data={shifts} />
+          <WeeklyScheduleCard />
           <LeaveRequestCard />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Pass shifts as a property named "data" to match the component's expectations */}
-          <UpcomingShiftCard isToday={true} data={shifts} />
+          <UpcomingShiftCard isToday={true} />
           <ClockInOutCard />
         </div>
       </div>
