@@ -6,12 +6,6 @@ import { Clock } from 'lucide-react';
 import { clockIn, clockOut, getActiveClockRecord } from '@/services/clockService';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { clockIn, clockOut, getActiveClockRecord } from '@/services/clockService';
 
 const ClockInOutCard: React.FC = () => {
   const [isClockingIn, setIsClockingIn] = useState(false);
