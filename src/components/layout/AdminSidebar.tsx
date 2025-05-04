@@ -120,13 +120,7 @@ const AdminSidebar: React.FC = () => {
           active={location.pathname === "/admin/generate"}
           collapsed={collapsed}
         />
-        <SidebarItem
-          to="/admin/approvals"
-          icon={<ClipboardCheck size={20} />}
-          label="Pending Approvals"
-          active={location.pathname === "/admin/approvals"}
-          collapsed={collapsed}
-        />
+        
         <SidebarItem
           to="/admin/leave"
           icon={<Clock size={20} />}

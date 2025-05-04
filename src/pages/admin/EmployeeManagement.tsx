@@ -63,10 +63,10 @@ const EmployeeManagement = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {employees.map((employee) => (
             <Card key={employee.id}>
-              <CardHeader>
+          <CardHeader>
                 <CardTitle>{employee.first_name} {employee.last_name}</CardTitle>
-              </CardHeader>
-              <CardContent>
+          </CardHeader>
+          <CardContent>
                 <div className="space-y-2">
                   <p><strong>Email:</strong> {employee.email}</p>
                   <p><strong>Position:</strong> {employee.position}</p>
@@ -76,17 +76,17 @@ const EmployeeManagement = () => {
                       onClick={() => navigate(`/admin/employees/${employee.id}/edit`)}
                     >
                       Edit
-                    </Button>
+                      </Button>
                     <Button
                       variant="destructive"
                       onClick={() => setEmployeeToDelete(employee.id)}
                     >
                       Delete
-                    </Button>
+                      </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+          </CardContent>
+        </Card>
           ))}
         </div>
 

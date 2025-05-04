@@ -72,21 +72,21 @@ const LeaveRequestsCard: React.FC = () => {
             </div>
           ) : (
             leaveRequests.map((request) => (
-              <div key={request.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8 border border-border">
-                    <AvatarFallback className="bg-forest text-cream text-xs">
+            <div key={request.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8 border border-border">
+                  <AvatarFallback className="bg-forest text-cream text-xs">
                       {`${request.employee?.first_name?.[0]}${request.employee?.last_name?.[0]}`}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
+                  </AvatarFallback>
+                </Avatar>
+                <div>
                     <p className="font-medium text-sm">
                       {request.employee?.first_name} {request.employee?.last_name}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-0.5">
                       <Badge className={getStatusBadge(request.status)}>
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                      </Badge>
+                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    </Badge>
                       <span className="text-xs text-muted-foreground">
                         {request.type} • {request.employee?.department?.name || 'All Departments'}
                       </span>
@@ -100,7 +100,7 @@ const LeaveRequestsCard: React.FC = () => {
                       <> - {format(parseISO(request.end_date), 'MMM d, yyyy')}</>
                     )}
                   </p>
-                </div>
+              </div>
               </div>
             ))
           )}

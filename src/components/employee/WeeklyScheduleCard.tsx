@@ -62,11 +62,11 @@ const WeeklyScheduleCard: React.FC<WeeklyScheduleCardProps> = ({ shifts = [] }) 
           {weekDates.map((date, index) => {
             const shift = getShiftForDate(date);
             return (
-              <div 
-                key={index} 
-                className="flex items-center justify-between p-2 rounded hover:bg-accent/50 transition-colors"
-              >
-                <span className="font-medium">{format(date, 'EEEE')}</span>
+            <div 
+              key={index} 
+              className="flex items-center justify-between p-2 rounded hover:bg-accent/50 transition-colors"
+            >
+              <span className="font-medium">{format(date, 'EEEE')}</span>
                 {getShiftBadge(shift)}
               </div>
             );

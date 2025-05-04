@@ -11,7 +11,7 @@ export const useLeaveData = () => {
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       if (!user?.id) return;
-
+      
       try {
         setLoading(true);
         const { data, error } = await supabase

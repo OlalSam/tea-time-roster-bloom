@@ -98,29 +98,29 @@ export function generateScheduleHtml(schedule: any) {
       </head>
       <body>
         <div class="container">
-          <h2>${title}</h2>
-          <p>Generated on ${new Date().toLocaleDateString()}</p>
-          <table>
-            <tr>
-              <th>Date</th>
-              <th>Shift</th>
-              <th>Time</th>
-              ${schedule.isAdminSummary ? '<th>Employee</th>' : ''}
-            </tr>
-            ${schedule.shifts.map((shift: any) => `
-              <tr>
-                <td>${new Date(shift.shift_date).toLocaleDateString()}</td>
-                <td>${shift.shift_type?.name || 'Unknown'}</td>
-                <td>${shift.shift_type?.start_time || '00:00'} - ${shift.shift_type?.end_time || '00:00'}</td>
-                ${schedule.isAdminSummary ? `<td>${shift.employee?.first_name || ''} ${shift.employee?.last_name || ''}</td>` : ''}
-              </tr>
-            `).join('')}
-          </table>
+      <h2>${title}</h2>
+      <p>Generated on ${new Date().toLocaleDateString()}</p>
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Shift</th>
+          <th>Time</th>
+          ${schedule.isAdminSummary ? '<th>Employee</th>' : ''}
+        </tr>
+        ${schedule.shifts.map((shift: any) => `
+          <tr>
+            <td>${new Date(shift.shift_date).toLocaleDateString()}</td>
+            <td>${shift.shift_type?.name || 'Unknown'}</td>
+            <td>${shift.shift_type?.start_time || '00:00'} - ${shift.shift_type?.end_time || '00:00'}</td>
+            ${schedule.isAdminSummary ? `<td>${shift.employee?.first_name || ''} ${shift.employee?.last_name || ''}</td>` : ''}
+          </tr>
+        `).join('')}
+      </table>
           <div class="footer">
-            <p>This is an automated message from your scheduling system.</p>
+      <p>This is an automated message from your scheduling system.</p>
             <p>Please do not reply to this email.</p>
           </div>
-        </div>
+    </div>
       </body>
     </html>
   `;

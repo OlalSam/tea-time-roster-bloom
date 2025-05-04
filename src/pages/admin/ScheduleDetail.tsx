@@ -163,7 +163,7 @@ const ScheduleDetail: React.FC = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center">
-          <Button variant="ghost" onClick={() => navigate('/admin/schedules')} className="mr-4">
+          <Button variant="ghost" onClick={() => navigate('/admin/schedule')} className="mr-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>

@@ -72,23 +72,23 @@ const ScheduleCard: React.FC = () => {
           ) : (
             shifts.map((shift) => (
               <div key={shift.shift_type} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                   <span className={`w-3 h-3 rounded-full ${shiftColors[shift.shift_type.toLowerCase()]}`} />
                   <span className="font-medium">
                     {shift.shift_type.charAt(0).toUpperCase() + shift.shift_type.slice(1)} Shift
                   </span>
-                </div>
-                <Badge variant="outline" className="font-medium">
-                  {shift.count || 0} employees
-                </Badge>
               </div>
+              <Badge variant="outline" className="font-medium">
+                  {shift.count || 0} employees
+              </Badge>
+            </div>
             ))
           )}
           
           {shifts.length > 0 && (
-            <div className="pt-4 mt-4 border-t border-border">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Total Employees Scheduled</span>
+          <div className="pt-4 mt-4 border-t border-border">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Total Employees Scheduled</span>
                 <span className="font-bold">{totalEmployees}</span>
               </div>
             </div>

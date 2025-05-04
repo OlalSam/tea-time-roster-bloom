@@ -68,10 +68,10 @@ const UpcomingShiftCard: React.FC<UpcomingShiftCardProps> = ({ isToday = false, 
           </div>
           
           {shiftType && (
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
               <span>{shiftType.start_time} - {shiftType.end_time}</span>
-            </div>
+          </div>
           )}
           
           <div className="flex items-center gap-2">

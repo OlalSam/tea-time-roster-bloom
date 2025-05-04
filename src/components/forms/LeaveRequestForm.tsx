@@ -28,7 +28,7 @@ const LeaveRequestForm: React.FC = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: '',
+    type: '',
       start_date: '',
       end_date: '',
       reason: '',
@@ -69,16 +69,16 @@ const LeaveRequestForm: React.FC = () => {
               <FormLabel>Leave Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select leave type" />
-                  </SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select leave type" />
+              </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="annual">Annual Leave</SelectItem>
-                  <SelectItem value="sick">Sick Leave</SelectItem>
-                  <SelectItem value="personal">Personal Leave</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectContent>
+                <SelectItem value="annual">Annual Leave</SelectItem>
+                <SelectItem value="sick">Sick Leave</SelectItem>
+                <SelectItem value="personal">Personal Leave</SelectItem>
+              </SelectContent>
+            </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -128,7 +128,7 @@ const LeaveRequestForm: React.FC = () => {
 
         <Button type="submit" className="w-full bg-forest hover:bg-forest-dark text-cream">
           Submit Request
-        </Button>
+          </Button>
       </form>
     </Form>
   );

@@ -2,7 +2,10 @@ import express from 'express';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,8 +21,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'harmanhamoso1@gmail.com',
-    pass: 'aaziqliajwbxqbcm'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -45,7 +48,7 @@ app.post('/api/send-email', async (req, res) => {
     }
 
     const info = await transporter.sendMail({
-      from: 'harmanhamoso1@gmail.com',
+      from: process.env.EMAIL_USER,
       to,
       subject,
       text,
@@ -70,6 +73,16 @@ app.post('/api/send-email', async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(join(__dirname, 'dist')));
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(join(__dirname, 'dist', 'index.html'));
+    }
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -149,7 +149,7 @@ const Settings = () => {
             </Button>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader>
             <CardTitle>Schedule Generation Settings</CardTitle>

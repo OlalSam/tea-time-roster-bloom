@@ -4,15 +4,15 @@ import { Employee, EmployeeAvailability } from "@/types/database";
 export async function getEmployees(): Promise<Employee[]> {
   try {
     const { data, error } = await supabase
-      .from('employees')
+    .from('employees')
       .select('*, departments(*)')
       .order('first_name');
-
+    
     if (error) {
       console.error('Supabase error:', error);
       throw error;
-    }
-
+  }
+  
     return data || [];
   } catch (error) {
     console.error('Error fetching employees:', error);
@@ -22,13 +22,13 @@ export async function getEmployees(): Promise<Employee[]> {
 
 export async function getEmployeeById(id: string): Promise<Employee | null> {
   try {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*, departments(*)')
-      .eq('id', id)
-      .single();
+  const { data, error } = await supabase
+    .from('employees')
+    .select('*, departments(*)')
+    .eq('id', id)
+    .single();
 
-    if (error) {
+  if (error) {
       console.error('Supabase error:', error);
       throw error;
     }
@@ -42,14 +42,14 @@ export async function getEmployeeById(id: string): Promise<Employee | null> {
 
 export async function updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee> {
   try {
-    const { data, error } = await supabase
-      .from('employees')
+  const { data, error } = await supabase
+    .from('employees')
       .update(employeeData)
-      .eq('id', id)
-      .select()
-      .single();
+    .eq('id', id)
+    .select()
+    .single();
 
-    if (error) {
+  if (error) {
       console.error('Supabase error:', error);
       throw error;
     }
@@ -63,13 +63,13 @@ export async function updateEmployee(id: string, employeeData: Partial<Employee>
 
 export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promise<Employee> {
   try {
-    const { data, error } = await supabase
-      .from('employees')
+  const { data, error } = await supabase
+    .from('employees')
       .insert(employeeData)
-      .select()
-      .single();
+    .select()
+    .single();
 
-    if (error) {
+  if (error) {
       console.error('Supabase error:', error);
       throw error;
     }
@@ -83,12 +83,12 @@ export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promis
 
 export async function deleteEmployee(id: string): Promise<void> {
   try {
-    const { error } = await supabase
-      .from('employees')
-      .delete()
-      .eq('id', id);
+  const { error } = await supabase
+    .from('employees')
+    .delete()
+    .eq('id', id);
 
-    if (error) {
+  if (error) {
       console.error('Supabase error:', error);
       throw error;
     }
