@@ -1,7 +1,5 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import EmployeeLayout from '@/components/layout/EmployeeLayout';
-import LeaveRequestForm from '@/components/forms/LeaveRequestForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,70 +12,69 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FileText, Plus } from 'lucide-react';
-
-interface LeaveRequest {
-  id: number;
-  type: string;
-  startDate: string;
-  endDate: string;
-  duration: string;
-  status: 'pending' | 'approved' | 'declined';
-  submittedOn: string;
-}
+import { useEmployeeData } from '@/hooks/useEmployeeData';
+import { fetchLeaveRequests, LeaveRequest } from '@/services/leaveService';
+import { useToast } from '@/components/ui/use-toast';
+import LeaveRequestForm from '@/components/forms/LeaveRequestForm';
 
 const LeaveManagement: React.FC = () => {
-  const leaveRequests: LeaveRequest[] = [
-    {
-      id: 1,
-      type: 'Vacation',
-      startDate: 'Jun 10, 2025',
-      endDate: 'Jun 15, 2025',
-      duration: '5 days',
-      status: 'approved',
-      submittedOn: 'Apr 15, 2025',
-    },
-    {
-      id: 2,
-      type: 'Sick Leave',
-      startDate: 'May 05, 2025',
-      endDate: 'May 05, 2025',
-      duration: '1 day',
-      status: 'pending',
-      submittedOn: 'Apr 28, 2025',
-    },
-    {
-      id: 3,
-      type: 'Personal',
-      startDate: 'Mar 22, 2025',
-      endDate: 'Mar 22, 2025',
-      duration: '1 day',
-      status: 'declined',
-      submittedOn: 'Mar 15, 2025',
-    },
-    {
-      id: 4,
-      type: 'Bereavement',
-      startDate: 'Feb 10, 2025',
-      endDate: 'Feb 12, 2025',
-      duration: '3 days',
-      status: 'approved',
-      submittedOn: 'Feb 08, 2025',
-    },
-  ];
-  
+  const { employee } = useEmployeeData();
+  const { toast } = useToast();
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadLeaveRequests = async () => {
+      if (!employee) return;
+
+      try {
+        const requests = await fetchLeaveRequests(employee.id);
+        setLeaveRequests(requests);
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load leave requests. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLeaveRequests();
+  }, [employee, toast]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-500 text-yellow-50';
       case 'approved':
         return 'bg-green-500 text-green-50';
-      case 'declined':
+      case 'rejected':
         return 'bg-red-500 text-red-50';
       default:
         return 'bg-gray-500 text-gray-50';
     }
   };
-  
+
+  const calculateDuration = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+  };
+
+  if (isLoading) {
+    return (
+      <EmployeeLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest"></div>
+        </div>
+      </EmployeeLayout>
+    );
+  }
+
   return (
     <EmployeeLayout>
       <div className="space-y-6">
@@ -100,10 +97,6 @@ const LeaveManagement: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-medium">Leave Request History</CardTitle>
-                  <div className="flex gap-2">
-                    <Badge variant="outline">Available: 15 days</Badge>
-                    <Badge variant="outline">Used: 5 days</Badge>
-                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -124,15 +117,15 @@ const LeaveManagement: React.FC = () => {
                         {leaveRequests.map((request) => (
                           <TableRow key={request.id}>
                             <TableCell>{request.type}</TableCell>
-                            <TableCell>{request.startDate}</TableCell>
-                            <TableCell>{request.endDate}</TableCell>
-                            <TableCell>{request.duration}</TableCell>
+                            <TableCell>{new Date(request.start_date).toLocaleDateString()}</TableCell>
+                            <TableCell>{new Date(request.end_date).toLocaleDateString()}</TableCell>
+                            <TableCell>{calculateDuration(request.start_date, request.end_date)}</TableCell>
                             <TableCell>
                               <Badge className={getStatusColor(request.status)}>
                                 {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                               </Badge>
                             </TableCell>
-                            <TableCell>{request.submittedOn}</TableCell>
+                            <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

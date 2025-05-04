@@ -1,4 +1,3 @@
-
 import React from 'react';
 import EmployeeLayout from '@/components/layout/EmployeeLayout';
 import ClockInOutCard from '@/components/employee/ClockInOutCard';
@@ -15,18 +14,24 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
+import { useClockInOut } from '@/hooks/useClockInOut';
+import { useScheduleData } from '@/hooks/useScheduleData';
 
 const ClockInOut: React.FC = () => {
-  // Sample data for the hours worked chart
-  const weeklyData = [
-    { day: 'Mon', hours: 8, target: 8 },
-    { day: 'Tue', hours: 8.5, target: 8 },
-    { day: 'Wed', hours: 7.75, target: 8 },
-    { day: 'Thu', hours: 0, target: 8 },
-    { day: 'Fri', hours: 0, target: 8 },
-    { day: 'Sat', hours: 0, target: 0 },
-    { day: 'Sun', hours: 0, target: 0 },
-  ];
+  const { weeklyData, totalHours, overtimeHours, remainingHours, isLoading: isClockDataLoading } = useClockInOut();
+  const { shifts, isLoading: isScheduleLoading } = useScheduleData();
+
+  const isLoading = isClockDataLoading || isScheduleLoading;
+
+  if (isLoading) {
+    return (
+      <EmployeeLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-forest"></div>
+        </div>
+      </EmployeeLayout>
+    );
+  }
 
   return (
     <EmployeeLayout>
@@ -35,7 +40,7 @@ const ClockInOut: React.FC = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ClockInOutCard />
-          <UpcomingShiftCard isToday={true} />
+          <UpcomingShiftCard isToday={true} shifts={shifts} />
         </div>
         
         <Card className="tea-shadow-md mt-6">
@@ -46,7 +51,6 @@ const ClockInOut: React.FC = () => {
             <Tabs defaultValue="week">
               <TabsList className="mb-4">
                 <TabsTrigger value="week">This Week</TabsTrigger>
-                <TabsTrigger value="month">This Month</TabsTrigger>
               </TabsList>
               <TabsContent value="week">
                 <div className="h-64">
@@ -70,15 +74,15 @@ const ClockInOut: React.FC = () => {
                 <div className="mt-4 flex justify-between text-sm">
                   <div>
                     <p className="text-muted-foreground">Hours this week</p>
-                    <p className="font-medium text-lg">24.25 / 40</p>
+                    <p className="font-medium text-lg">{totalHours} / 40</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Overtime</p>
-                    <p className="font-medium text-lg">0.5 hrs</p>
+                    <p className="font-medium text-lg">{overtimeHours} hrs</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Remaining</p>
-                    <p className="font-medium text-lg">15.75 hrs</p>
+                    <p className="font-medium text-lg">{remainingHours} hrs</p>
                   </div>
                 </div>
               </TabsContent>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 import { signIn } from '@/services/authService';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,8 +21,23 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
-      navigate('/employee/dashboard');
+      const authData = await signIn(email, password);
+      
+      // Check user's position after successful login
+      if (authData.user) {
+        const { data: employeeData } = await supabase
+          .from('employees')
+          .select('position')
+          .eq('id', authData.user.id)
+          .single();
+
+        // Navigate based on position
+        if (employeeData?.position.toLocaleLowerCase() === 'admin' || employeeData?.position.toLocaleLowerCase() === 'manager') {
+          navigate('/admin');
+        } else {
+          navigate('/employee');
+        }
+      }
     } catch (error) {
       toast({
         title: "Error",

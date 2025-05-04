@@ -56,21 +56,6 @@ const ScheduleDetail: React.FC = () => {
         setShifts(shiftsData);
         setShiftTypes(shiftTypesData);
         setDepartments(departmentsData);
-
-        // Mock employee data for now - would normally come from an API
-        const mockEmployees: Record<string, any> = {};
-        shiftsData.forEach(shift => {
-          if (!mockEmployees[shift.employee_id]) {
-            mockEmployees[shift.employee_id] = {
-              id: shift.employee_id,
-              name: `Employee ${shift.employee_id.slice(0, 4)}`,
-              position: 'Worker',
-              department: 'Tea Processing'
-            };
-          }
-        });
-
-        setEmployees(mockEmployees);
       } catch (error) {
         console.error('Error loading data:', error);
         toast({
@@ -165,7 +150,7 @@ const ScheduleDetail: React.FC = () => {
       <AdminLayout>
         <div className="text-center py-8">
           <p className="text-lg font-medium">Schedule not found</p>
-          <Button onClick={() => navigate('/admin/schedules')} variant="outline" className="mt-4">
+          <Button onClick={() => navigate('/admin/schedule')} variant="outline" className="mt-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Schedules
           </Button>
@@ -260,60 +245,51 @@ const ScheduleDetail: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
                     <TableHead>Employee</TableHead>
+                    <TableHead>Date</TableHead>
                     <TableHead>Shift Type</TableHead>
-                    <TableHead>Time</TableHead>
+                    <TableHead className="text-right">Time</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {shifts.map((shift) => {
-                    const shiftType = getShiftTypeById(shift.shift_type_id);
-                    return (
-                      <TableRow key={shift.id}>
-                        <TableCell>{format(parseISO(shift.shift_date), 'MMM d, yyyy')}</TableCell>
-                        <TableCell>
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <Button variant="link" className="p-0 h-auto">
-                                {employees[shift.employee_id]?.name || `Employee ${shift.employee_id.slice(0, 4)}`}
-                              </Button>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-80">
-                              <div className="flex justify-between space-x-4">
-                                <div className="space-y-1">
-                                  <h4 className="text-sm font-semibold">
-                                    {employees[shift.employee_id]?.name || `Employee ${shift.employee_id.slice(0, 4)}`}
-                                  </h4>
-                                  <p className="text-sm">
-                                    {employees[shift.employee_id]?.position || 'Worker'}
-                                  </p>
-                                  <div className="flex items-center pt-2">
-                                    <User className="mr-2 h-4 w-4 opacity-70" />
-                                    <span className="text-xs text-muted-foreground">
-                                      {employees[shift.employee_id]?.department || 'Department unknown'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <div
-                              className="w-3 h-3 rounded-full mr-2"
-                              style={{ backgroundColor: shiftType?.color || '#888' }}
-                            />
-                            {shiftType?.name || 'Unknown'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {shiftType ? `${shiftType.start_time.substring(0, 5)} - ${shiftType.end_time.substring(0, 5)}` : 'Unknown'}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {shifts.map((shift) => (
+                    <TableRow key={shift.id}>
+                      <TableCell>
+                        <HoverCard>
+                          <HoverCardTrigger className="cursor-pointer">
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2" />
+                              {shift.employees?.first_name} {shift.employees?.last_name}
+                            </div>
+                          </HoverCardTrigger>
+                          <HoverCardContent>
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium">{shift.employees?.first_name} {shift.employees?.last_name}</p>
+                              <p className="text-sm text-muted-foreground">{shift.employees?.position}</p>
+                              <p className="text-sm text-muted-foreground">{shift.employees?.departments?.name}</p>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      </TableCell>
+                      <TableCell>{format(parseISO(shift.shift_date), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium" 
+                              style={{ backgroundColor: shift.shift_types?.color + '20', color: shift.shift_types?.color }}>
+                          {shift.shift_types?.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {shift.shift_types?.start_time && shift.shift_types?.end_time ? (
+                          <>
+                            {format(new Date(`2000-01-01T${shift.shift_types.start_time}`), 'h:mm a')} - 
+                            {format(new Date(`2000-01-01T${shift.shift_types.end_time}`), 'h:mm a')}
+                          </>
+                        ) : (
+                          'Time not set'
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             )}

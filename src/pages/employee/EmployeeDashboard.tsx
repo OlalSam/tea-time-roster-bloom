@@ -1,4 +1,3 @@
-
 import React from 'react';
 import EmployeeLayout from '@/components/layout/EmployeeLayout';
 import UpcomingShiftCard from '@/components/employee/UpcomingShiftCard';
@@ -37,12 +36,12 @@ const EmployeeDashboard: React.FC = () => {
         <EmployeeStats />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <WeeklyScheduleCard />
+          <WeeklyScheduleCard shifts={shifts} />
           <LeaveRequestCard />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UpcomingShiftCard isToday={true} />
+          <UpcomingShiftCard isToday={true} shifts={shifts} />
           <ClockInOutCard />
         </div>
       </div>

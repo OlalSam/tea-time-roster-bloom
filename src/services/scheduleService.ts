@@ -287,8 +287,28 @@ export async function fetchScheduleById(id: string): Promise<Schedule> {
 export async function fetchScheduleShifts(scheduleId: string): Promise<ScheduleShift[]> {
   const { data, error } = await supabase
     .from('schedule_shifts')
-    .select('*')
-    .eq('schedule_id', scheduleId);
+    .select(`
+      *,
+      employees (
+        id,
+        first_name,
+        last_name,
+        position,
+        departments (
+          id,
+          name
+        )
+      ),
+      shift_types (
+        id,
+        name,
+        start_time,
+        end_time,
+        color
+      )
+    `)
+    .eq('schedule_id', scheduleId)
+    .order('shift_date', { ascending: true });
 
   if (error) {
     console.error('Error fetching schedule shifts:', error);
@@ -325,7 +345,9 @@ async function sendScheduleNotifications(scheduleId: string) {
         employees (
           id,
           first_name,
-          last_name
+          last_name,
+          email,
+          role
         ),
         shift_types (
           name,
@@ -355,17 +377,133 @@ async function sendScheduleNotifications(scheduleId: string) {
     });
 
     console.log("Schedule notification prepared for employees:", Object.keys(employeeShifts).length);
-    // Instead of sending emails (which requires email field), just log the notification
+    
+    // Send emails to each employee
     for (const employeeId in employeeShifts) {
       const { employee, shifts } = employeeShifts[employeeId];
-      console.log(`Would send email to employee ${employee?.first_name} ${employee?.last_name} with ${shifts.length} shifts`);
+      
+      if (employee?.email) {
+        try {
+          await sendScheduleEmail(employee.email, {
+            shifts,
+            isAdminSummary: false
+          });
+          console.log(`Sent schedule email to ${employee.first_name} ${employee.last_name} at ${employee.email}`);
+        } catch (error) {
+          console.error(`Failed to send email to ${employee.first_name} ${employee.last_name}:`, error);
+        }
+      } else {
+        console.warn(`No email found for employee ${employee?.first_name} ${employee?.last_name}`);
+      }
     }
 
-    // Log admin notification instead of sending email
-    console.log("Would send summary to admin employees");
+    // Send summary to admin employees
+    const adminEmails = Object.values(employeeShifts)
+      .filter(({ employee }) => employee?.role === 'admin' && employee?.email)
+      .map(({ employee }) => employee.email);
+
+    if (adminEmails.length > 0) {
+      try {
+        const formattedShifts = shifts?.map(shift => ({
+          shift_date: shift.shift_date,
+          shift_type: {
+            name: shift.shift_types.name,
+            start_time: shift.shift_types.start_time,
+            end_time: shift.shift_types.end_time
+          }
+        })) || [];
+
+        await sendScheduleEmail(adminEmails.join(','), {
+          shifts: formattedShifts,
+          isAdminSummary: true
+        });
+        console.log('Sent schedule summary to admin employees');
+      } catch (error) {
+        console.error('Failed to send admin summary:', error);
+      }
+    }
     
   } catch (error) {
     console.error('Error in schedule notifications:', error);
     throw error;
   }
 }
+
+export interface ShiftCount {
+  shift_type: string;
+  count: number;
+}
+
+export interface PendingSchedule {
+  id: string;
+  department_id: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  department: {
+    name: string;
+  };
+  employee_count: number;
+}
+
+export const fetchTodayShiftCounts = async (): Promise<ShiftCount[]> => {
+  const today = format(new Date(), 'yyyy-MM-dd');
+  
+  try {
+    const { data, error } = await supabase
+      .from('schedule_shifts')
+      .select(`
+        shift_type_id,
+        shift_types!shift_type_id(name)
+      `)
+      .eq('shift_date', today);
+
+    if (error) throw error;
+    
+    // Group and count by shift type
+    const counts = (data || []).reduce((acc: Record<string, number>, curr) => {
+      const shiftType = curr.shift_types?.name || 'Unknown';
+      acc[shiftType] = (acc[shiftType] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Convert to ShiftCount array
+    return Object.entries(counts).map(([shift_type, count]) => ({
+      shift_type,
+      count
+    }));
+  } catch (error) {
+    console.error('Error fetching today\'s shift counts:', error);
+    throw error;
+  }
+};
+
+export const fetchPendingSchedules = async (): Promise<PendingSchedule[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .select(`
+        id,
+        department_id,
+        start_date,
+        end_date,
+        status,
+        department:departments(name),
+        employee_count:schedule_shifts!inner(count)
+      `)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (error) throw error;
+    
+    // Transform the data to match PendingSchedule interface
+    return (data || []).map(schedule => ({
+      ...schedule,
+      employee_count: schedule.employee_count[0]?.count || 0
+    }));
+  } catch (error) {
+    console.error('Error fetching pending schedules:', error);
+    throw error;
+  }
+};

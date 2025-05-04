@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import EmployeeLayout from '@/components/layout/EmployeeLayout';
 import { useEmployeeData } from '@/hooks/useEmployeeData';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,33 +9,110 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bell, Lock, Mail, User } from 'lucide-react';
+import { updateEmployee } from '@/services/employeeService';
+import { updatePassword } from '@/services/authService';
 
 const EmployeeSettings: React.FC = () => {
   const { employee, isLoading } = useEmployeeData();
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveGeneralSettings = (e: React.FormEvent) => {
+  const handleSaveGeneralSettings = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Settings saved",
-      description: "Your general settings have been updated.",
-    });
+    if (!employee) return;
+
+    setIsSaving(true);
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      await updateEmployee(employee.id, {
+        first_name: formData.get('firstName') as string,
+        last_name: formData.get('lastName') as string,
+        email: formData.get('email') as string,
+      });
+
+      toast({
+        title: "Settings saved",
+        description: "Your general settings have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update settings. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveNotifications = (e: React.FormEvent) => {
+  const handleSaveNotifications = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Notification preferences saved",
-      description: "Your notification preferences have been updated.",
-    });
+    if (!employee) return;
+
+    setIsSaving(true);
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      await updateEmployee(employee.id, {
+        notification_email: formData.get('notification-email') as string,
+        notification_preferences: {
+          schedule_updates: formData.get('schedule-notifications') === 'on',
+          leave_requests: formData.get('leave-notifications') === 'on',
+          announcements: formData.get('announcement-notifications') === 'on',
+        }
+      });
+
+      toast({
+        title: "Notification preferences saved",
+        description: "Your notification preferences have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update notification preferences. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  const handleSavePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Password updated",
-      description: "Your password has been changed successfully.",
-    });
+    setIsSaving(true);
+    const formData = new FormData(e.currentTarget);
+    
+    const currentPassword = formData.get('current-password') as string;
+    const newPassword = formData.get('new-password') as string;
+    const confirmPassword = formData.get('confirm-password') as string;
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive"
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    try {
+      await updatePassword(newPassword);
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+      e.currentTarget.reset();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -53,28 +129,19 @@ const EmployeeSettings: React.FC = () => {
     <EmployeeLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Account Settings</h1>
+          <h1 className="text-2xl font-bold">Settings</h1>
         </div>
 
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:max-w-md">
-            <TabsTrigger value="general">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">General</span>
-              </div>
+        <Tabs defaultValue="general" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="general" className="flex items-center gap-2">
+              <User className="h-4 w-4" /> General
             </TabsTrigger>
-            <TabsTrigger value="notifications">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Notifications</span>
-              </div>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" /> Notifications
             </TabsTrigger>
-            <TabsTrigger value="security">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                <span className="hidden sm:inline">Security</span>
-              </div>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" /> Security
             </TabsTrigger>
           </TabsList>
 
@@ -93,14 +160,18 @@ const EmployeeSettings: React.FC = () => {
                       <Label htmlFor="firstName">First Name</Label>
                       <Input 
                         id="firstName" 
+                        name="firstName"
                         defaultValue={employee?.first_name || ''} 
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input 
                         id="lastName" 
+                        name="lastName"
                         defaultValue={employee?.last_name || ''} 
+                        required
                       />
                     </div>
                   </div>
@@ -109,8 +180,10 @@ const EmployeeSettings: React.FC = () => {
                     <Label htmlFor="email">Email</Label>
                     <Input 
                       id="email" 
+                      name="email"
                       type="email" 
                       defaultValue={employee?.email || ''} 
+                      required
                     />
                   </div>
 
@@ -123,22 +196,11 @@ const EmployeeSettings: React.FC = () => {
                     />
                     <p className="text-xs text-muted-foreground">Position can only be changed by administrators.</p>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Language Preference</Label>
-                    <select 
-                      id="language" 
-                      className="w-full rounded-md border border-input bg-background px-3 py-2"
-                      defaultValue="en"
-                    >
-                      <option value="en">English</option>
-                      <option value="es">Spanish</option>
-                      <option value="fr">French</option>
-                    </select>
-                  </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
                 </CardFooter>
               </form>
             </Card>
@@ -161,7 +223,11 @@ const EmployeeSettings: React.FC = () => {
                         Receive notifications when your schedule changes
                       </p>
                     </div>
-                    <Switch id="schedule-notifications" defaultChecked />
+                    <Switch 
+                      id="schedule-notifications" 
+                      name="schedule-notifications"
+                      defaultChecked={employee?.notification_preferences?.schedule_updates} 
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -170,7 +236,11 @@ const EmployeeSettings: React.FC = () => {
                         Receive notifications about leave request status changes
                       </p>
                     </div>
-                    <Switch id="leave-notifications" defaultChecked />
+                    <Switch 
+                      id="leave-notifications" 
+                      name="leave-notifications"
+                      defaultChecked={employee?.notification_preferences?.leave_requests} 
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -179,7 +249,11 @@ const EmployeeSettings: React.FC = () => {
                         Receive company-wide announcements
                       </p>
                     </div>
-                    <Switch id="announcement-notifications" defaultChecked />
+                    <Switch 
+                      id="announcement-notifications" 
+                      name="announcement-notifications"
+                      defaultChecked={employee?.notification_preferences?.announcements} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="notification-email">Notification Email</Label>
@@ -187,14 +261,17 @@ const EmployeeSettings: React.FC = () => {
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <Input 
                         id="notification-email" 
+                        name="notification-email"
                         type="email" 
-                        defaultValue={employee?.email || ''} 
+                        defaultValue={employee?.notification_email || employee?.email || ''} 
                       />
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button type="submit">Save Preferences</Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Saving..." : "Save Preferences"}
+                  </Button>
                 </CardFooter>
               </form>
             </Card>
@@ -212,15 +289,15 @@ const EmployeeSettings: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
+                    <Input id="current-password" name="current-password" type="password" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
+                    <Input id="new-password" name="new-password" type="password" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <Input id="confirm-password" type="password" />
+                    <Input id="confirm-password" name="confirm-password" type="password" required />
                   </div>
                   <div className="space-y-1 pt-2">
                     <Label>Password Requirements</Label>
@@ -232,7 +309,9 @@ const EmployeeSettings: React.FC = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button type="submit">Update Password</Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Updating..." : "Update Password"}
+                  </Button>
                 </CardFooter>
               </form>
             </Card>

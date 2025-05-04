@@ -1,27 +1,153 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Employee, EmployeeAvailability } from "@/types/database";
 
-export async function fetchEmployees(departmentId?: string): Promise<Employee[]> {
-  let query = supabase
-    .from('employees')
-    .select('*');
-    
-  if (departmentId && departmentId !== 'all') {
-    query = query.eq('department_id', departmentId);
-  }
-  
-  const { data, error } = await query;
+export async function getEmployees(): Promise<Employee[]> {
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*, departments(*)')
+      .order('first_name');
 
-  if (error) {
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
     console.error('Error fetching employees:', error);
     throw error;
   }
-
-  return data || [];
 }
 
-export async function fetchEmployeeAvailability(employeeId: string): Promise<EmployeeAvailability[]> {
+export async function getEmployeeById(id: string): Promise<Employee | null> {
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*, departments(*)')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching employee:', error);
+    throw error;
+  }
+}
+
+export async function updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee> {
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .update(employeeData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating employee:', error);
+    throw error;
+  }
+}
+
+export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promise<Employee> {
+  try {
+    const { data, error } = await supabase
+      .from('employees')
+      .insert(employeeData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error creating employee:', error);
+    throw error;
+  }
+}
+
+export async function deleteEmployee(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('employees')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    throw error;
+  }
+}
+
+export async function updateEmployeeAvailability(
+  employeeId: string,
+  availability: {
+    day_of_week: number;
+    preference: 'preferred' | 'available' | 'unavailable';
+    shift_type_id: string | null;
+  }[]
+): Promise<void> {
+  // First, delete existing availability records
+  const { error: deleteError } = await supabase
+    .from('employee_availability')
+    .delete()
+    .eq('employee_id', employeeId);
+
+  if (deleteError) {
+    console.error('Error deleting existing availability:', deleteError);
+    throw deleteError;
+  }
+
+  // Then, insert new availability records
+  const { error: insertError } = await supabase
+    .from('employee_availability')
+    .insert(
+      availability.map(record => ({
+        employee_id: employeeId,
+        day_of_week: record.day_of_week,
+        preference: record.preference,
+        shift_type_id: record.shift_type_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }))
+    );
+
+  if (insertError) {
+    console.error('Error inserting new availability:', insertError);
+    throw insertError;
+  }
+}
+
+export async function fetchEmployeeAvailability(
+  employeeId: string
+): Promise<{
+  day_of_week: number;
+  preference: string;
+  shift_type_id: string;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  employee_id: string;
+}[]> {
   const { data, error } = await supabase
     .from('employee_availability')
     .select('*')
@@ -32,39 +158,5 @@ export async function fetchEmployeeAvailability(employeeId: string): Promise<Emp
     throw error;
   }
 
-  return data as EmployeeAvailability[] || [];
-}
-
-export async function createEmployee(employee: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
-  const { data, error } = await supabase
-    .from('employees')
-    .insert(employee)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating employee:', error);
-    throw error;
-  }
-
-  return data;
-}
-
-export async function updateEmployeeAvailability(
-  employeeId: string,
-  availabilities: Omit<EmployeeAvailability, 'id' | 'employee_id' | 'created_at' | 'updated_at'>[]
-): Promise<void> {
-  const { error } = await supabase
-    .from('employee_availability')
-    .upsert(
-      availabilities.map(a => ({
-        employee_id: employeeId,
-        ...a
-      }))
-    );
-
-  if (error) {
-    console.error('Error updating employee availability:', error);
-    throw error;
-  }
+  return data || [];
 }

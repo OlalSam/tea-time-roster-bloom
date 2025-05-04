@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 import { signUp } from '@/services/authService';
 import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const Register = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('employee');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -23,7 +24,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, firstName, lastName);
+      await signUp(email, password, firstName, lastName, role);
       toast({
         title: "Success",
         description: "Account created successfully. Please sign in.",
@@ -91,6 +92,19 @@ const Register = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="employee">Employee</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button type="submit" className="w-full bg-forest hover:bg-forest-dark" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create Account"}

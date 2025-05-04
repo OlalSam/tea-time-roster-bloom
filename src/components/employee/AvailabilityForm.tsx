@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -80,7 +79,7 @@ const AvailabilityForm = ({ currentAvailability }: { currentAvailability: Employ
       const availabilityUpdates = Object.entries(availabilitySettings).map(([dayOfWeek, preference]) => ({
         day_of_week: parseInt(dayOfWeek),
         preference: preference as 'preferred' | 'available' | 'unavailable',
-        shift_type_id: '00000000-0000-0000-0000-000000000000' // Default shift type ID
+        shift_type_id: null // Set to null since no specific shift type is selected
       }));
 
       await updateEmployeeAvailability(user.id, availabilityUpdates);

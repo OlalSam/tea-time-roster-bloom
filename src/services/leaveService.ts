@@ -1,88 +1,145 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import type { LeaveRequest, LeaveRequestStatus } from '@/types/database';
 
-export interface LeaveRequest {
-  id: string;
-  employee_id: string;
-  type: string;
-  start_date: string;
-  end_date: string;
-  status: 'pending' | 'approved' | 'declined';
-  reason: string;
-  created_at: string;
-}
-
-export async function createLeaveRequest(request: {
-  employee_id: string;
-  type: string;
-  start_date?: string;
-  end_date?: string;
-  startDate?: string;
-  endDate?: string;
-  reason: string;
-}) {
-  // Map form fields to database fields
-  const payload = {
-    employee_id: request.employee_id,
-    type: request.type,
-    start_date: request.start_date || request.startDate,
-    end_date: request.end_date || request.endDate,
-    reason: request.reason,
-    status: 'pending' as const
-  };
-
+export async function fetchLeaveRequests() {
   const { data, error } = await supabase
     .from('leave_requests')
-    .insert(payload)
+    .select(`
+      *,
+      employee:employees (
+        id,
+        first_name,
+        last_name,
+        position,
+        department_id
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as LeaveRequest[];
+}
+
+export async function fetchLeaveRequestById(id: string) {
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .select(`
+      *,
+      employee:employees (
+        id,
+        first_name,
+        last_name,
+        position,
+        department_id
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data as LeaveRequest;
+}
+
+export async function createLeaveRequest(
+  employeeId: string,
+  type: string,
+  startDate: string,
+  endDate: string,
+  reason?: string
+) {
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .insert({
+      employee_id: employeeId,
+      type,
+      start_date: startDate,
+      end_date: endDate,
+      reason,
+      status: 'pending' as LeaveRequestStatus
+    })
     .select()
     .single();
 
   if (error) throw error;
-  return data;
+  return data as LeaveRequest;
+}
+
+export async function updateLeaveRequestStatus(
+  requestId: string,
+  status: LeaveRequestStatus
+) {
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .update({ 
+      status,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', requestId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as LeaveRequest;
+}
+
+export async function deleteLeaveRequest(requestId: string) {
+  const { error } = await supabase
+    .from('leave_requests')
+    .delete()
+    .eq('id', requestId);
+
+  if (error) throw error;
 }
 
 export async function fetchEmployeeLeaveRequests(employeeId: string) {
   const { data, error } = await supabase
     .from('leave_requests')
-    .select('*')
+    .select(`
+      *,
+      employee:employees (
+        id,
+        first_name,
+        last_name,
+        position,
+        department_id
+      )
+    `)
     .eq('employee_id', employeeId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data as LeaveRequest[];
 }
 
-export async function fetchPendingLeaveRequests() {
+export async function fetchPendingLeaveRequests(): Promise<LeaveRequest[]> {
   const { data, error } = await supabase
     .from('leave_requests')
     .select(`
       *,
-      employees (
+      employee:employees (
         id,
         first_name,
         last_name,
-        department_id
+        position,
+        department:departments (
+          name
+        )
       )
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
-}
 
-export async function updateLeaveRequestStatus(id: string, status: 'approved' | 'declined') {
-  const { error } = await supabase
-    .from('leave_requests')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) throw error;
+  return (data || []).map(request => ({
+    ...request,
+    status: request.status as LeaveRequestStatus
+  }));
 }
 
 // Add functions used in tests
 export async function submitLeaveRequest(leaveData: any) {
-  return await createLeaveRequest(leaveData);
+  return await createLeaveRequest(leaveData.employee_id, leaveData.type, leaveData.start_date, leaveData.end_date, leaveData.reason);
 }
 
 export async function getLeaveBalance(employeeId: string) {

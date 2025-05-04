@@ -1,53 +1,54 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Card, CardContent } from '@/components/ui/card';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createLeaveRequest } from '@/services/leaveService';
 import { useToast } from '@/components/ui/use-toast';
-import { format } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { createLeaveRequest } from '@/services/leaveService';
 
-interface LeaveRequestFormData {
-  type: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
-}
+const formSchema = z.object({
+  type: z.string().min(1, 'Leave type is required'),
+  start_date: z.string().min(1, 'Start date is required'),
+  end_date: z.string().min(1, 'End date is required'),
+  reason: z.string().min(1, 'Reason is required'),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const LeaveRequestForm: React.FC = () => {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveRequestFormData>();
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      type: '',
+      start_date: '',
+      end_date: '',
+      reason: '',
+    },
+  });
 
-  const onSubmit = async (data: LeaveRequestFormData) => {
-    if (!user?.id) {
-      toast({
-        title: 'Error',
-        description: 'You must be logged in to submit a leave request',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+  const onSubmit = async (data: FormData) => {
     try {
-      await createLeaveRequest({
-        employee_id: user.id,
-        type: data.type,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        reason: data.reason
-      });
-
+      await createLeaveRequest(
+        user?.id,
+        data.type,
+        data.start_date,
+        data.end_date,
+        data.reason
+      );
       toast({
         title: 'Success',
         description: 'Leave request submitted successfully',
       });
-
-      reset();
+      navigate('/employee/dashboard');
     } catch (error) {
       toast({
         title: 'Error',
@@ -58,56 +59,78 @@ const LeaveRequestForm: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Select {...register('type')} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select leave type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="vacation">Vacation</SelectItem>
-                <SelectItem value="sick">Sick Leave</SelectItem>
-                <SelectItem value="personal">Personal Leave</SelectItem>
-                <SelectItem value="bereavement">Bereavement</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Leave Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select leave type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="annual">Annual Leave</SelectItem>
+                  <SelectItem value="sick">Sick Leave</SelectItem>
+                  <SelectItem value="personal">Personal Leave</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Input
-                type="date"
-                {...register('startDate')}
-                min={format(new Date(), 'yyyy-MM-dd')}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Input
-                type="date"
-                {...register('endDate')}
-                min={format(new Date(), 'yyyy-MM-dd')}
-                required
-              />
-            </div>
-          </div>
+        <FormField
+          control={form.control}
+          name="start_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Start Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-2">
-            <Textarea
-              {...register('reason')}
-              placeholder="Reason for leave"
-              required
-            />
-          </div>
+        <FormField
+          control={form.control}
+          name="end_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>End Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Button type="submit" className="w-full bg-forest text-cream hover:bg-forest-dark">
-            Submit Request
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <FormField
+          control={form.control}
+          name="reason"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Reason</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full bg-forest hover:bg-forest-dark text-cream">
+          Submit Request
+        </Button>
+      </form>
+    </Form>
   );
 };
 
