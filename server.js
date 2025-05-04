@@ -74,15 +74,17 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, 'dist')));
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(join(__dirname, 'dist', 'index.html'));
-    }
-  });
-}
+// Serve static files from the Vite build
+app.use(express.static(join(__dirname, 'dist')));
+
+// Handle all other routes by serving index.html
+app.get('*', (req, res) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API endpoint not found' });
+  }
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

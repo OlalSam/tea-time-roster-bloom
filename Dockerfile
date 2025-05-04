@@ -8,9 +8,13 @@ RUN npm install
 # 2. Copy source code
 COPY . .
 
-# 3. Expose the port that Vite will use
+# 3. Build the Vite application
+RUN npm run build
+
+# 4. Start the server in production mode
+ENV NODE_ENV=production
 ENV PORT=10000
 
-# 4. Start both servers
-CMD ["sh", "-c", "npm run server & npm run dev -- --host 0.0.0.0 --port $PORT"]
+# 5. Start the server
+CMD ["npm", "run", "server"]
 
