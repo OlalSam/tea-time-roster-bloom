@@ -1,19 +1,17 @@
-# 1. Base image
 FROM node:18-alpine
-
-# 2. Set working directory
 WORKDIR /app
 
-# 3. Install dependencies
+# 1. Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# 4. Copy all code
+# 2. Copy source code
 COPY . .
 
-# 5. Expose your ports
-EXPOSE 8080 8081
+# 3. Expose no static port (optional)
+#    Render will detect the port from the running process automatically
+#    EXPOSE  # you can omit EXPOSE entirely, or document $PORT
 
-# 6. Default command: run server & dev
-#    This matches your local: npm run server && npm run dev
-CMD ["sh", "-c", "npm run server & npm run dev"]
+# 4. Run both processes, binding Vite to $PORT
+CMD ["sh", "-c", "npm run server & npm run dev -- --host 0.0.0.0 --port $PORT"]
+
