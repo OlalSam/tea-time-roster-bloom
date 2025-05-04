@@ -71,7 +71,12 @@ app.post('/api/send-email', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    port: process.env.PORT
+  });
 });
 
 // Serve static files from the Vite build
@@ -95,8 +100,28 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(port, () => {
+// Create server instance
+const server = app.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log(`Health check available at http://localhost:${port}/api/health`);
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Supabase URL:', process.env.VITE_SUPABASE_URL ? 'Set' : 'Not set');
+  console.log('Supabase Anon Key:', process.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Not set');
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
 }); 

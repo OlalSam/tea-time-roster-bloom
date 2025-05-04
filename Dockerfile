@@ -21,6 +21,10 @@ RUN npm run build
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# 6. Start the server
-CMD ["npm", "run", "server"]
+# 6. Add a healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/api/health || exit 1
+
+# 7. Start the server with proper signal handling
+CMD ["sh", "-c", "trap 'exit 0' SIGTERM; node server.js"]
 
