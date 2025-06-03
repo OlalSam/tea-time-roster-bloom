@@ -1,6 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Employee, EmployeeAvailability } from "@/types/database";
 
+export class EmployeeDeletionError extends Error {
+  constructor(
+    message: string,
+    public constraint?: string
+  ) {
+    super(message);
+    this.name = 'EmployeeDeletionError';
+  }
+}
+
 export async function getEmployees(): Promise<Employee[]> {
   try {
     const { data, error } = await supabase
@@ -83,18 +93,27 @@ export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promis
 
 export async function deleteEmployee(id: string): Promise<void> {
   try {
-  const { error } = await supabase
-    .from('employees')
-    .delete()
-    .eq('id', id);
+    const { error } = await supabase
+      .from('employees')
+      .delete()
+      .eq('id', id);
 
-  if (error) {
-      console.error('Supabase error:', error);
+    if (error) {
+      if (error.code === '23503') { // Foreign key violation
+        const pgError = error as { code: string; constraint?: string };
+        throw new EmployeeDeletionError(
+          'Cannot delete employee due to existing references',
+          pgError.constraint
+        );
+      }
       throw error;
     }
   } catch (error) {
+    if (error instanceof EmployeeDeletionError) {
+      throw error;
+    }
     console.error('Error deleting employee:', error);
-    throw error;
+    throw new Error('Failed to delete employee');
   }
 }
 
