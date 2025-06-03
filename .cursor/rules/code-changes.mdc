@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Never change code not instructed. Small incremental changes are the best.
+Most of the code already works just polishing. 
