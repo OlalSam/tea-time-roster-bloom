@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,8 +27,8 @@ const Index = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Tea Factory Management</h1>
-              <p className="text-cream-dark text-sm md:text-base">Schedule & Leave Management System</p>
+              <h1 className="text-2xl md:text-3xl font-bold">Timetable Generator</h1>
+              <p className="text-cream-dark text-sm md:text-base">Employee Schedule & Leave Management</p>
             </div>
           </div>
           <div className="flex gap-4">
@@ -47,7 +46,7 @@ const Index = () => {
       <main className="flex-1 max-w-7xl mx-auto p-6 w-full">
         <div className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-forest mt-8 mb-4">
-            Streamlined Scheduling for Tea Factories
+            Streamlined Employee Scheduling
           </h2>
           <p className="text-lg text-charcoal-light max-w-2xl mx-auto">
             Access your schedule, manage shifts, and request time off with our intuitive dashboard system.
@@ -249,9 +248,9 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-3">Tea Factory Management</h3>
+              <h3 className="text-xl font-bold mb-3">Timetable Generator</h3>
               <p className="text-sm text-cream-dark">
-                A comprehensive solution for tea factory scheduling and leave management.
+                A comprehensive solution for employee scheduling and leave management.
               </p>
             </div>
             <div>
@@ -276,7 +275,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-forest-light mt-8 pt-4 text-center text-xs text-cream-dark">
-            &copy; 2025 Tea Factory Management System. All rights reserved.
+            &copy; 2025 Timetable Generator. All rights reserved.
           </div>
         </div>
       </footer>
